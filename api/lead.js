@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   }
 
   try {
-        const { id, email, zip, site, use_case, people_aboard, location, budget_timeline, summary, messages } = req.body;
+        const { id, email, zip, site, name, use_case, people_aboard, location, budget_timeline, summary, messages, boat_types } = req.body;
 
       if (!email || !zip) {
               return res.status(400).json({ error: 'email and zip are required' });
@@ -36,7 +36,9 @@ export default async function handler(req, res) {
       const row = {
               email,
               zip,
-              site: site || 'AluminumFishingBoats.us',
+              site: site || null,
+              name: name || null,
+              boat_types: boat_types || null,
               use_case: use_case || null,
               people_aboard: people_aboard || null,
               location: location || null,
