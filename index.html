@@ -950,6 +950,17 @@ window.speechSynthesis.speak(u);
 const BACKEND_URL = 'https://trawlers-boats.vercel.app';
 const CHAT_SESSION_ID = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
 
+// Log a lightweight page-view (top-of-funnel), independent of whether chat is ever used.
+(function() {
+try {
+fetch(BACKEND_URL + "/api/visit", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ site: 'Trawlers.boats', page: null, session_id: CHAT_SESSION_ID })
+}).catch(function(e) { console.error('Visit logging error:', e); });
+} catch (e) {}
+})();
+
 async function callClaude(msgs, systemOverride) {
 try {
 const res = await fetch(BACKEND_URL + "/api/chat", {
