@@ -948,6 +948,7 @@ window.speechSynthesis.speak(u);
 }
 
 const BACKEND_URL = 'https://trawlers-boats.vercel.app';
+const CHAT_SESSION_ID = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
 
 async function callClaude(msgs, systemOverride) {
 try {
@@ -956,7 +957,10 @@ method: "POST",
 headers: { "Content-Type": "application/json" },
 body: JSON.stringify({
 system: systemOverride || SYSTEM_PROMPT,
-messages: msgs
+messages: msgs,
+site: 'Trawlers.boats',
+page: null,
+session_id: CHAT_SESSION_ID
 })
 });
 const data = await res.json();
