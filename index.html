@@ -2,8 +2,8 @@
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trawlers for Sale | Talk to an AI Boat Expert — Trawlers.boats</title>
-<meta name="description" content="Find the right trawler by talking to our free AI buying assistant — no forms, no credit card, matched with a local dealer who sells what you're looking for.">
+<title>Trawlers for Sale &amp; Prices | Talk to an AI Boat Expert — Trawlers.boats</title>
+<meta name="description" content="Find trawlers for sale from local dealers near you — chat free with Capt. Bob for pricing, financing, and the right fit. No forms, no credit card required.">
 <link rel="canonical" href="https://trawlers.boats/">
 <meta name="theme-color" content="#0A1A22">
 
@@ -613,6 +613,19 @@ color: var(--light-text-dim);
 font-size: 11.5px;
 font-family: var(--mono);
 }
+
+/* --- hero refresh (rollout) --- */
+.eyebrow{font-size:13px;margin-bottom:18px;}
+.hero h1{font-size:clamp(36px,5.5vw,58px);}
+.hero-split{display:flex;gap:26px;align-items:center;margin-bottom:26px;}
+.hero-photo-wrap{flex:0 0 42%;border-radius:22px;border:2px solid var(--teal-bright);box-shadow:0 0 0 6px rgba(33,181,156,0.12);overflow:hidden;line-height:0;}
+.hero-photo-wrap img{width:100%;display:block;}
+.hero p.sub{font-size:19px;line-height:1.55;max-width:none;margin:0;flex:1;}
+.trust-item{font-size:15px;}
+.chat-head-left .avatar{background:none;box-shadow:none;padding:0;overflow:hidden;}
+.chat-head-left .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+@media (max-width: 720px){.hero-split{flex-direction:column;align-items:stretch;} .hero-photo-wrap{flex:none;}}
+/* --- end hero refresh --- */
 </style>
 </head>
 <body>
@@ -635,8 +648,11 @@ font-family: var(--mono);
 <div class="hero-grid">
 <div>
 <div class="eyebrow">Talk to us: Text/Voice</div>
-<h1>Chat with Capt. Bob about Trawlers — Always Free</h1>
+<h1>Trawlers for Sale — Chat Free with Capt. Bob</h1>
+<div class="hero-split">
+<div class="hero-photo-wrap"><img src="/capt-bob-hero.jpg" alt="Capt. Bob"></div>
 <p class="sub">Tell Capt. Bob what you're looking for — hull design, range, cabin layout, budget, and timeline — and he'll connect you with the right local dealer.</p>
+</div>
 <div class="trust-row">
 <div class="trust-item"><span class="tick">✓</span> always free</div>
 <div class="trust-item"><span class="tick">✓</span> No forms to fill out</div>
@@ -648,7 +664,7 @@ font-family: var(--mono);
 <div class="chat-card">
 <div class="chat-head">
 <div class="chat-head-left">
-<div class="avatar">B</div>
+<div class="avatar"><img src="/capt-bob-avatar.png" alt="Capt. Bob"></div>
 <div>
 <div class="name">Capt. Bob — Personal Boat Advisor</div>
 <div class="status">● online now</div>

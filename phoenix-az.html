@@ -3,7 +3,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trawlers for Sale in Phoenix, AZ | trawlers.boats</title>
-<meta name="description" content="Find the right trawler near Phoenix by talking to our free AI buying assistant — no forms, no credit card, matched with a local Phoenix-area dealer.">
+<meta name="description" content="Find trawlers for sale near Phoenix, AZ — chat free with Capt. Bob for pricing, financing, and a local Phoenix-area dealer. No forms, no credit card required.">
 <link rel="canonical" href="https://trawlers.boats/phoenix-az">
 <meta name="theme-color" content="#0A1A22">
 
@@ -613,6 +613,19 @@ color: var(--light-text-dim);
 font-size: 11.5px;
 font-family: var(--mono);
 }
+
+/* --- hero refresh (rollout) --- */
+.eyebrow{font-size:13px;margin-bottom:18px;}
+.hero h1{font-size:clamp(36px,5.5vw,58px);}
+.hero-split{display:flex;gap:26px;align-items:center;margin-bottom:26px;}
+.hero-photo-wrap{flex:0 0 42%;border-radius:22px;border:2px solid var(--teal-bright);box-shadow:0 0 0 6px rgba(33,181,156,0.12);overflow:hidden;line-height:0;}
+.hero-photo-wrap img{width:100%;display:block;}
+.hero p.sub{font-size:19px;line-height:1.55;max-width:none;margin:0;flex:1;}
+.trust-item{font-size:15px;}
+.chat-head-left .avatar{background:none;box-shadow:none;padding:0;overflow:hidden;}
+.chat-head-left .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+@media (max-width: 720px){.hero-split{flex-direction:column;align-items:stretch;} .hero-photo-wrap{flex:none;}}
+/* --- end hero refresh --- */
 </style>
 </head>
 <body>
@@ -635,8 +648,11 @@ font-family: var(--mono);
 <div class="hero-grid">
 <div>
 <div class="eyebrow">Talk to us: Text/Voice</div>
-<h1>Chat with Capt. Bob — Find Your Next Trawler Near Phoenix. It's Free!</h1>
+<h1>Trawler for Sale Near Phoenix, AZ — Chat Free with Capt. Bob</h1>
+<div class="hero-split">
+<div class="hero-photo-wrap"><img src="/capt-bob-hero.jpg" alt="Capt. Bob"></div>
 <p class="sub">Tell Capt. Bob what you're looking for, and he'll connect you with a local Phoenix-area dealer.</p>
+</div>
 <div class="trust-row">
 <div class="trust-item"><span class="tick">✓</span> always free</div>
 <div class="trust-item"><span class="tick">✓</span> No forms to fill out</div>
@@ -648,7 +664,7 @@ font-family: var(--mono);
 <div class="chat-card">
 <div class="chat-head">
 <div class="chat-head-left">
-<div class="avatar">B</div>
+<div class="avatar"><img src="/capt-bob-avatar.png" alt="Capt. Bob"></div>
 <div>
 <div class="name">Capt. Bob — Personal Boat Advisor</div>
 <div class="status">● online now</div>
@@ -678,10 +694,10 @@ font-family: var(--mono);
 
 <section class="why-section" style="background:#fff; border-top:1px solid rgba(15,35,44,0.08); padding-top:32px; padding-bottom:32px;">
 <div class="inner" style="display:flex; justify-content:center;">
-<div class="weather-widget" id="weatherWidget" data-lat="33.4484" data-lon="-112.0740" data-label="Lake Pleasant">
+<div class="weather-widget" id="weatherWidget" data-lat="33.4484" data-lon="-112.0740" data-label="Lake Pleasant" data-metro="Phoenix, AZ">
   <div class="weather-widget-header">
     <span class="weather-widget-icon" id="weatherWidgetIcon">⛅</span>
-    <span class="weather-widget-title" id="weatherWidgetTitle">Current Conditions — <span class="weather-widget-location">Lake Pleasant</span></span>
+    <span class="weather-widget-title" id="weatherWidgetTitle">Current Conditions — <span class="weather-widget-location">Lake Pleasant</span>, Phoenix, AZ</span>
   </div>
   <div class="weather-widget-body" id="weatherWidgetBody">
     <div class="weather-widget-loading">Loading current conditions…</div>
@@ -713,6 +729,7 @@ font-family: var(--mono);
   var lat = widget.dataset.lat;
   var lon = widget.dataset.lon;
   var label = widget.dataset.label;
+  var metro = widget.dataset.metro;
   var body = document.getElementById('weatherWidgetBody');
   var titleEl = document.getElementById('weatherWidgetTitle');
   var iconEl = document.getElementById('weatherWidgetIcon');
@@ -727,7 +744,7 @@ font-family: var(--mono);
       var c = data.current;
 
       if (data.isMarine) {
-        titleEl.innerHTML = 'Marine Conditions — <span class="weather-widget-location">' + label + '</span>';
+        titleEl.innerHTML = 'Marine Conditions — <span class="weather-widget-location">' + label + '</span>, ' + metro;
         iconEl.textContent = '\ud83c\udf0a';
       }
 
