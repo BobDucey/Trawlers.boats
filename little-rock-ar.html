@@ -297,7 +297,7 @@ display: flex; align-items: center; justify-content: center;
 font-size: 15px; font-weight: 800; color: var(--bg-dark);
 box-shadow: 0 0 16px rgba(33,181,156,0.5);
 }
-.chat-head-left .name { color: #fff; font-size: 15px; font-weight: 700; }
+.chat-head-left .name { color: #fff; font-size: 19px; font-weight: 700; }
 .chat-head-left .status { color: var(--teal-bright); font-size: 10.5px; font-family: var(--mono); }
 .voice-toggle {
 display: flex; align-items: center; gap: 6px;
@@ -648,10 +648,9 @@ font-family: var(--mono);
 <div class="hero-grid">
 <div>
 <div class="eyebrow">Talk to us: Text/Voice</div>
-<h1>Trawler for Sale Near Little Rock, AR — Chat Free with Capt. Bob</h1>
+<h1>I'll locate the closest dealer selling Trawlers & Yachts near Little Rock - Chat with Capt. Bob</h1>
 <div class="hero-split">
 <div class="hero-photo-wrap"><img src="/capt-bob-hero.jpg" alt="Capt. Bob"></div>
-<p class="sub">Tell Capt. Bob what you're looking for, and he'll connect you with a local Little Rock-area dealer.</p>
 </div>
 <div class="trust-row">
 <div class="trust-item"><span class="tick">✓</span> always free</div>
@@ -903,12 +902,11 @@ font-family: var(--mono);
 <div class="lead-overlay" id="gateOverlay">
 <div class="lead-card">
 <div class="lead-card-head">
-<span class="tag">FREE MATCHES</span>
+<span class="tag">GET YOUR DEALER MATCH</span>
 <button class="close" id="gateClose">✕</button>
 </div>
 <div class="lead-card-body">
-<div class="subline" style="margin-bottom:18px;">Before you start your chat with Capt. Bob, we need two inputs from you. Please input your zip code which allows us to select the closest boat dealer near you who sells the boat you want. We ask for your email so the selected boat dealer can send you details on the boat you want.</div>
-<div class="subline" style="margin-bottom:18px; font-size:15px; color:var(--navy); line-height:1.5;">Before you start your chat with Capt. Bob, we need two inputs. Please input your zip code which allows us to select the closest dealer near you who sells the boat you want. We ask for your email so the selected dealer can send you information on the boat you want.</div>
+<div class="subline" style="margin-bottom:18px; font-size:15px; color:var(--navy); line-height:1.5;">We need your email and zip code to select the closest dealer selling the trawlers & yachts you're looking for.</div>
 <span id="gateQuery" style="display:none;"></span>
 <form id="gateForm">
 <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:18px;">
@@ -920,7 +918,7 @@ font-family: var(--mono);
 </div>
 </div>
 <div class="lead-actions">
-<button type="submit" class="btn-primary">Start Chat with Capt. Bob</button>
+<button type="submit" class="btn-primary">Get My Dealer Match</button>
 <button type="button" class="btn-ghost" id="gateCancel">Not now</button>
 </div>
 </form>
@@ -959,10 +957,9 @@ Rules:
 - Question 1 (boat type) works differently: keep that message to one short, friendly sentence (e.g. "Let's find you the perfect boat — to get started, just select the type of boat you're interested in below.") and do not name or describe any specific boat type or category yourself (not even the site's general category, like "trawler") — the interface automatically shows the buyer a full selector right after this message. End that specific reply with a new final line containing exactly: SHOW_BOAT_TYPES
 - That SHOW_BOAT_TYPES line must be the very last line of that first reply, alone, with nothing else on it, and must only ever appear once, on that first question.
 - For questions 2 through 8, ask them ONE AT A TIME, strictly in the order listed above. Do not reorder them, combine them, or skip one even if the buyer's earlier answer seems to partly cover a later question — still ask each one explicitly, briefly acknowledging what they already told you if relevant.
-- Their zip code is already on file, so never ask where they live or what area they're in.
 - Each reply is max 2 sentences.
 - Be conversational and specific to trawlers (hull design, range, engine configuration, cabin layout) when relevant — don't be generic about "boats."
-- Never ask for name, email, or phone — that happens after this chat.
+- Never ask for their zip code, email, phone, or location — we collect that automatically once the conversation wraps up, to match them with the closest dealer.
 - Once all 8 questions are answered, thank them briefly, tell them you're pulling their matches, then add a new final line containing exactly: MATCH_READY
 - That MATCH_READY line must be the very last line of your reply, alone, with nothing else on it. Never explain it to the user, never format it, and only include it the moment the conversation is truly complete.
 - Keep total replies short. No markdown, no bullet lists, just plain conversational text.`;
@@ -987,6 +984,7 @@ let leadZip = null;
 let buyerFirstName = null;
 let activeSystemPrompt = SYSTEM_PROMPT;
 let pendingText = null;
+let pendingMatchReady = false;
 
 function addBubble(role, text) {
 const b = document.createElement('div');
@@ -1140,10 +1138,6 @@ console.error('Network error saving lead:', e);
 
 function trySend(text) {
 if (!text || !text.trim()) return;
-if (!leadCaptured) {
-openGate(text);
-return;
-}
 if (!buyerFirstName) {
 setFirstName(text);
 return;
@@ -1204,7 +1198,12 @@ addBubble('assistant', "Having trouble connecting right now — mind trying agai
 sendBtn.disabled = false;
 saveLeadProgress();
 if (matchReady) {
+if (!leadCaptured) {
+pendingMatchReady = true;
+openGate();
+} else {
 getMatches();
+}
 }
 }
 
@@ -1330,8 +1329,14 @@ leadCaptured = true;
 
 gateOverlay.classList.remove('show');
 
-// initial save: capture email, zip, and the greeting + first query even before Claude replies
+// initial save: capture email, zip, and the full conversation now that it's complete
 await saveLeadProgress();
+
+if (pendingMatchReady) {
+pendingMatchReady = false;
+getMatches();
+return;
+}
 
 const toSend = pendingText;
 pendingText = null;
