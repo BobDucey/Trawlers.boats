@@ -1065,19 +1065,30 @@ addMatchResultBubble(data);
 saveLeadProgress(data);
 }
 
+let matchResultShown = false;
+
 function addMatchResultBubble(d) {
 // Phase 1 dealer matching isn't live yet, so every buyer sees the honest
 // "no match yet" state. Once /api/match.js exists, replace `false` below
 // with the real match result.
 const realMatchFound = false;
 
+// Show the result once per chat, even if a later reply signals MATCH_READY again.
+if (matchResultShown) return;
+matchResultShown = true;
+
+const metroName = String(SOURCE_METRO || '').split(',')[0].trim();
+const areaText = metroName ? `the ${metroName} area` : 'your area';
+const boatText = (selectedBoatTypes && selectedBoatTypes.length) ? selectedBoatTypes.join(' or ') : 'the boat you want';
+const thanksText = buyerFirstName ? `Thanks, ${buyerFirstName}.` : 'Thanks.';
+
 const headline = realMatchFound
 ? 'Good news — we found a local dealer for you!'
-: "Unfortunately, we don't have a local dealer in your area yet.";
+: `${thanksText} I've saved everything you told me.`;
 
 const subline = realMatchFound
-? `A dealer near ${d.location} carries the boat you're looking for and will be contacting you shortly at ${leadEmail || 'your email'}.`
-: `We're actively expanding our dealer network in ${d.location}. Your information has been saved, and we'll reach out as soon as a matching dealer joins.`;
+? `A dealer in ${areaText} carries the boat you're looking for and will be contacting you shortly at ${leadEmail || 'your email'}.`
+: `We're still signing up dealers in ${areaText}, so we'll email you as soon as one who carries ${boatText} is ready to help.`;
 
 const text = `${headline} ${subline}`;
 
