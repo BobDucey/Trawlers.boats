@@ -768,7 +768,7 @@ Rules:
 - Be conversational and specific to trawlers (hull design, range, engine configuration, cabin layout) when relevant — don't be generic about "boats."
 - Question 9 (zip code): briefly explain why first — something like you need it to find the closest dealer who has what they're looking for — then ask for it. If what they give you isn't a valid 5-digit zip code, politely ask them to double-check it and send it again before moving on.
 - Question 10 (email): briefly explain why first — something like you need it to send their matches over — then ask for it. If what they give you doesn't look like a valid email address, politely ask them to double-check it and send it again before moving on.
-- Once all 10 questions are answered, thank them briefly, tell them you're pulling their matches, then add a new final line containing exactly: MATCH_READY
+- Once all 10 questions are answered, thank them briefly and say you have everything you need. Do not promise matches, dealers, emails or any timing — the page shows the buyer what happens next right after your message. Then add a new final line containing exactly: MATCH_READY
 - That MATCH_READY line must be the very last line of your reply, alone, with nothing else on it. Never explain it to the user, never format it, and only include it the moment the conversation is truly complete.
 - Keep total replies short. No markdown, no bullet lists, just plain conversational text.`;
 
@@ -1018,15 +1018,26 @@ openGate();
 }
 }
 
+// Data extraction uses its own instructions (not Capt. Bob's chat rules),
+// so the reply comes back as clean JSON instead of conversation.
+const EXTRACT_SYSTEM_PROMPT = `You are a data extraction tool for a boat-buying chat. Read the conversation and reply with ONLY the single JSON object requested in the last message. No greeting, no explanation, no markdown fences. Use the buyer's actual answers wherever they gave them.`;
+
+function parseJsonReply(raw) {
+const text = String(raw || '').replace(/```json|```/g, '');
+const start = text.indexOf('{');
+const end = text.lastIndexOf('}');
+if (start === -1 || end <= start) throw new Error('No JSON in reply');
+return JSON.parse(text.slice(start, end + 1));
+}
+
 async function captureLeadFromConversation() {
 const extractPrompt = `Based on the conversation so far, return ONLY a JSON object, nothing else, no markdown fences, with this exact shape:
 {"zip":"...","email":"..."}
 Extract the exact 5-digit zip code and exact email address the buyer provided earlier in this conversation. If either one is missing or doesn't look valid, use null for that field instead of guessing.`;
 try {
 const msgs = messages.concat([{ role: 'user', content: extractPrompt }]);
-const raw = await callClaude(msgs, activeSystemPrompt);
-const cleaned = raw.replace(/```json|```/g, '').trim();
-const data = JSON.parse(cleaned);
+const raw = await callClaude(msgs, EXTRACT_SYSTEM_PROMPT);
+const data = parseJsonReply(raw);
 const zip = (data.zip || '').toString().trim();
 const email = (data.email || '').toString().trim();
 const zipValid = /^\d{5}$/.test(zip);
@@ -1049,9 +1060,8 @@ If any field wasn't mentioned, make a reasonable brief guess based on context, o
 let data;
 try {
 const msgs = messages.concat([{ role: 'user', content: extractPrompt }]);
-const raw = await callClaude(msgs, activeSystemPrompt);
-const cleaned = raw.replace(/```json|```/g, '').trim();
-data = JSON.parse(cleaned);
+const raw = await callClaude(msgs, EXTRACT_SYSTEM_PROMPT);
+data = parseJsonReply(raw);
 } catch (e) {
 data = {
 use_case: "Trawler shopper",
