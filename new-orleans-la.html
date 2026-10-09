@@ -623,7 +623,26 @@ font-family: var(--mono);
 .chat-head-left .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
 @media (max-width: 720px){.hero-split{flex-direction:column;align-items:stretch;} .hero-photo-wrap{flex:none;}}
 /* --- end hero refresh --- */
+/* --- phone layout fix --- */
+.input-row input{min-width:0;}
+.hero-grid > div{min-width:0;}
+@media (max-width: 979px){
+html:not(.embedded) .nav{padding:10px 18px;}
+html:not(.embedded) .hero{padding:14px 18px 40px;}
+html:not(.embedded) .hero-grid{gap:14px;}
+html:not(.embedded) .eyebrow{margin-bottom:8px;}
+html:not(.embedded) .hero h1{font-size:30px;line-height:1.15;margin-bottom:6px;}
+html:not(.embedded) .hero-split{display:none;}
+html:not(.embedded) .chat-card{height:auto;max-height:none;}
+}
+@media (max-width: 720px){
+html:not(.embedded) .hero h1{font-size:22px;}
+}
+/* --- end phone layout fix --- */
 </style>
+<script>if(window.parent!==window)document.documentElement.classList.add('embedded');</script>
+<!-- Capt. Bob conversion tracking (Google Ads) -->
+<script src="https://aiboatleads.com/captbob-track.js" defer></script>
 </head>
 <body>
 
@@ -645,7 +664,7 @@ font-family: var(--mono);
 <div class="hero-grid">
 <div>
 <div class="eyebrow">Talk to us: Text/Voice</div>
-<h1>I'll find for you the best dealer in New Orleans selling Trawlers & Yachts - Free - Chat with Capt. Bob</h1>
+<h1>Best Dealer in New Orleans selling Trawlers & Yachts - Chat with me - Free</h1>
 <div class="hero-split">
 <div class="hero-photo-wrap"><img src="/capt-bob-hero.jpg" alt="Capt. Bob"></div>
 </div>
@@ -662,7 +681,7 @@ font-family: var(--mono);
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant"><span class="bubble-label">Capt. Bob</span>Hi, I'm Capt. Bob, your Personal Boat Advisor for Trawlers! Before we get started, what's your first name?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant"><span class="bubble-label">Capt. Bob</span>Hi, I'm Capt. Bob, your Personal Boat Advisor for Trawlers in New Orleans! What's your first name?</div></div>
 
 <div class="chat-foot">
 <div class="input-row">
@@ -746,27 +765,29 @@ const leadClose = document.getElementById('leadClose');
 const SYSTEM_PROMPT = `You are Capt. Bob, the AI buying assistant on Trawlers.boats, part of the AI Boat Leads network.
 You talk to prospective boat buyers the way a great, low-pressure salesperson would: warm, brief, one question at a time.
 
-You must ask about these 10 things IN THIS EXACT ORDER, one per reply, never skipping ahead or asking two at once:
-1. What type(s) of boat they're looking for (handled by the interface, not by you — see rule below).
-2. Whether they want a new or used boat.
-3. How they plan to use the boat.
-4. What type of water they'll be boating on.
-5. How many people they'll typically be boating with.
-6. Whether the boat will be kept docked on the water or trailered.
-7. Their budget for the boat.
-8. When they plan to buy.
-9. Their zip code.
-10. Their email address.
+You must ask these 10 questions IN THIS EXACT ORDER, one per reply, never skipping ahead or asking two at once. Use the wording shown, word for word:
+1. Please select the type you're interested in below.
+2. Are you looking for a new boat or a used one?
+3. How do you plan to use it — fishing, cruising or just general recreation?
+4. What type of water will you be on — lakes, rivers, bays or offshore?
+5. How many people would you typically take out?
+6. Will you be keeping the boat docked at the water, or will you be trailering it?
+7. What's your budget for the boat?
+8. When are you planning to make your purchase — are you ready to buy soon or in the early research phase?
+9. I'll need your zip code to find the closest dealer.
+10. And last thing — I'll need your email to send your dealer matches.
 
 Rules:
-- Question 1 (boat type) works differently: keep that message to one short, friendly sentence (e.g. "Let's find you the perfect boat — to get started, just select the type of boat you're interested in below.") and do not name or describe any specific boat type or category yourself (not even the site's general category, like "trawler") — the interface automatically shows the buyer a full selector right after this message. End that specific reply with a new final line containing exactly: SHOW_BOAT_TYPES
+- Each reply is the next question from the list above and nothing else: no praise, no comment on the buyer's previous answer, no extra sentences. The only change you may make to the wording is adding the buyer's first name, as described in the next rule.
+- Personalize with the buyer's first name where it reads naturally, at the start or the end of the question (for example "Bob, are you looking for a new boat or a used one?" or "What's your budget for the boat, Bob?"). Do this in roughly every second or third question, not in every one, and never force it where it sounds awkward.
+- Question 1 (boat type): the interface automatically shows the buyer a full selector right after this message, so do not name or describe any specific boat type or category yourself. End that specific reply with a new final line containing exactly: SHOW_BOAT_TYPES
 - That SHOW_BOAT_TYPES line must be the very last line of that first reply, alone, with nothing else on it, and must only ever appear once, on that first question.
-- For questions 2 through 10, ask them ONE AT A TIME, strictly in the order listed above. Do not reorder them, combine them, or skip one even if the buyer's earlier answer seems to partly cover a later question — still ask each one explicitly, briefly acknowledging what they already told you if relevant.
+- Do not reorder, combine or skip questions, even if the buyer's earlier answer seems to partly cover a later question.
+- If the buyer asks you something, or gives a reply that does not answer the question, respond in one short sentence and then ask the same question again.
 - Each reply is max 2 sentences.
-- Be conversational and specific to trawlers (hull design, range, engine configuration, cabin layout) when relevant — don't be generic about "boats."
-- Question 9 (zip code): briefly explain why first — something like you need it to find the closest dealer who has what they're looking for — then ask for it. If what they give you isn't a valid 5-digit zip code, politely ask them to double-check it and send it again before moving on.
-- Question 10 (email): briefly explain why first — something like you need it to send their matches over — then ask for it. If what they give you doesn't look like a valid email address, politely ask them to double-check it and send it again before moving on.
-- Once all 10 questions are answered, thank them briefly, tell them you're pulling their matches, then add a new final line containing exactly: MATCH_READY
+- Question 9 (zip code): if what they give you isn't a valid 5-digit zip code, politely ask them to double-check it and send it again before moving on.
+- Question 10 (email): if what they give you doesn't look like a valid email address, politely ask them to double-check it and send it again before moving on.
+- Once all 10 questions are answered, reply only with a short thank-you saying you have everything you need (for example "Thanks, Bob — I have everything I need."). Do not promise matches, dealers, emails or any timing — the page shows the buyer what happens next right after your message. Then add a new final line containing exactly: MATCH_READY
 - That MATCH_READY line must be the very last line of your reply, alone, with nothing else on it. Never explain it to the user, never format it, and only include it the moment the conversation is truly complete.
 - Keep total replies short. No markdown, no bullet lists, just plain conversational text.`;
 
@@ -959,7 +980,7 @@ addBubble('assistant', "Sorry, I didn't catch that — what's your first name?")
 return;
 }
 buyerFirstName = firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
-activeSystemPrompt = `The buyer just told you their first name is ${buyerFirstName}. Greet them warmly by name in your very next reply, then continue with the normal flow below starting at question 1. Keep using their first name naturally throughout the ENTIRE rest of the conversation, not just at the start — work it in roughly every 2 to 3 replies (acknowledging an answer, transitioning to the next question, wrapping up, etc.) all the way through to the final MATCH_READY message, so the chat feels personal from beginning to end. Do not use it in literally every single reply, and never force it awkwardly into a sentence — but do not stop using it after the first couple of exchanges either.
+activeSystemPrompt = `The buyer just told you their first name is ${buyerFirstName}. Start your very next reply with a short greeting by name (for example "Nice to meet you, ${buyerFirstName}!") and then ask question 1 from the list below. After that, follow the first-name rule below all the way through to the final MATCH_READY message.
 
 ` + SYSTEM_PROMPT;
 chatInput.placeholder = 'Tell us about the trawler you need…';
@@ -1016,15 +1037,26 @@ openGate();
 }
 }
 
+// Data extraction uses its own instructions (not Capt. Bob's chat rules),
+// so the reply comes back as clean JSON instead of conversation.
+const EXTRACT_SYSTEM_PROMPT = `You are a data extraction tool for a boat-buying chat. Read the conversation and reply with ONLY the single JSON object requested in the last message. No greeting, no explanation, no markdown fences. Use the buyer's actual answers wherever they gave them.`;
+
+function parseJsonReply(raw) {
+const text = String(raw || '').replace(/```json|```/g, '');
+const start = text.indexOf('{');
+const end = text.lastIndexOf('}');
+if (start === -1 || end <= start) throw new Error('No JSON in reply');
+return JSON.parse(text.slice(start, end + 1));
+}
+
 async function captureLeadFromConversation() {
 const extractPrompt = `Based on the conversation so far, return ONLY a JSON object, nothing else, no markdown fences, with this exact shape:
 {"zip":"...","email":"..."}
 Extract the exact 5-digit zip code and exact email address the buyer provided earlier in this conversation. If either one is missing or doesn't look valid, use null for that field instead of guessing.`;
 try {
 const msgs = messages.concat([{ role: 'user', content: extractPrompt }]);
-const raw = await callClaude(msgs, activeSystemPrompt);
-const cleaned = raw.replace(/```json|```/g, '').trim();
-const data = JSON.parse(cleaned);
+const raw = await callClaude(msgs, EXTRACT_SYSTEM_PROMPT);
+const data = parseJsonReply(raw);
 const zip = (data.zip || '').toString().trim();
 const email = (data.email || '').toString().trim();
 const zipValid = /^\d{5}$/.test(zip);
@@ -1047,9 +1079,8 @@ If any field wasn't mentioned, make a reasonable brief guess based on context, o
 let data;
 try {
 const msgs = messages.concat([{ role: 'user', content: extractPrompt }]);
-const raw = await callClaude(msgs, activeSystemPrompt);
-const cleaned = raw.replace(/```json|```/g, '').trim();
-data = JSON.parse(cleaned);
+const raw = await callClaude(msgs, EXTRACT_SYSTEM_PROMPT);
+data = parseJsonReply(raw);
 } catch (e) {
 data = {
 use_case: "Trawler shopper",
@@ -1063,19 +1094,30 @@ addMatchResultBubble(data);
 saveLeadProgress(data);
 }
 
+let matchResultShown = false;
+
 function addMatchResultBubble(d) {
 // Phase 1 dealer matching isn't live yet, so every buyer sees the honest
 // "no match yet" state. Once /api/match.js exists, replace `false` below
 // with the real match result.
 const realMatchFound = false;
 
+// Show the result once per chat, even if a later reply signals MATCH_READY again.
+if (matchResultShown) return;
+matchResultShown = true;
+
+const metroName = String(SOURCE_METRO || '').split(',')[0].trim();
+const areaText = metroName ? `the ${metroName} area` : 'your area';
+const boatText = (selectedBoatTypes && selectedBoatTypes.length) ? selectedBoatTypes.join(' or ') : 'the boat you want';
+const thanksText = buyerFirstName ? `Thanks, ${buyerFirstName}.` : 'Thanks.';
+
 const headline = realMatchFound
 ? 'Good news — we found a local dealer for you!'
-: "Unfortunately, we don't have a local dealer in your area yet.";
+: `${thanksText} I've saved everything you told me.`;
 
 const subline = realMatchFound
-? `A dealer near ${d.location} carries the boat you're looking for and will be contacting you shortly at ${leadEmail || 'your email'}.`
-: `We're actively expanding our dealer network in ${d.location}. Your information has been saved, and we'll reach out as soon as a matching dealer joins.`;
+? `A dealer in ${areaText} carries the boat you're looking for and will be contacting you shortly at ${leadEmail || 'your email'}.`
+: `We're still signing up dealers in ${areaText}, so we'll email you as soon as one who carries ${boatText} is ready to help.`;
 
 const text = `${headline} ${subline}`;
 
@@ -1177,7 +1219,7 @@ doSend(toSend);
 });
 
 // opening message
-messages.push({ role: 'assistant', content: "Hi, I'm Capt. Bob, your Personal Boat Advisor for Trawlers! Before we get started, what's your first name?" });
+messages.push({ role: 'assistant', content: "Hi, I'm Capt. Bob, your Personal Boat Advisor for Trawlers in New Orleans! What's your first name?" });
 })();
 </script>
 
