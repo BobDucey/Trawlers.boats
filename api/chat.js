@@ -51,7 +51,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, system, site, page, session_id } = req.body;
+    const { messages, system, site, page, session_id, log_only } = req.body;
+
+    // A tapped answer needs no AI reply: record the engagement event and stop.
+    if (log_only) {
+      await logChatEvent(site, page, session_id);
+      return res.status(200).json({ ok: true });
+    }
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'Missing or invalid "messages" array' });
