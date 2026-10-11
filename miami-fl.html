@@ -904,7 +904,7 @@ return "Sorry, I'm having trouble connecting right now — mind trying again in 
 }
 
 async function saveLeadProgress(extra) {
-if (!leadEmail || !leadZip) return;
+if (!leadEmail) return;
 try {
 const record = {
 id: leadRecordId || undefined,
@@ -1100,10 +1100,11 @@ summary: 'Shopping for ' + BOAT_TYPE + ' near ' + SOURCE_METRO + '. ' + parts.jo
 };
 }
 
+// The lead is saved as soon as the buyer gives an email; the zip code and first name are added to it when they come in.
 // Saves run one at a time so a second save always reuses the first one's lead record.
 let saveQueue = Promise.resolve();
 function queueLeadSave() {
-if (!leadEmail || !leadZip) return saveQueue;
+if (!leadEmail) return saveQueue;
 leadCaptured = true;
 saveQueue = saveQueue.then(function () { return saveLeadProgress(leadFields()); });
 return saveQueue;

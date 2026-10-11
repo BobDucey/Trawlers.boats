@@ -19,8 +19,9 @@ export default async function handler(req, res) {
   try {
         const { id, email, zip, site, name, use_case, people_aboard, location, budget_timeline, summary, messages, boat_types, source_metro } = req.body;
 
-      if (!email || !zip) {
-              return res.status(400).json({ error: 'email and zip are required' });
+      // A lead needs only an email; zip code and name are optional.
+      if (!email) {
+              return res.status(400).json({ error: 'email is required' });
       }
 
       const supabaseUrl = process.env.SUPABASE_URL;
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
       // record instead of creating a new lead every message).
       const row = {
               email,
-              zip,
+              zip: zip || null,
               site: site || null,
               name: name || null,
               boat_types: boat_types || null,
