@@ -329,7 +329,8 @@ line-height: 1.5;
 }
 .bubble-label {
 display: block;
-font-size: 11px;
+text-align: center;
+font-size: 13px;
 font-weight: 700;
 letter-spacing: 0.03em;
 color: var(--teal-bright);
@@ -669,7 +670,7 @@ html:not(.embedded) .chat-body{flex:1;gap:14px;padding:16px;}
 html:not(.embedded) .chat-card.typed-step .chat-body{flex:0 0 auto;}
 html:not(.embedded) .chat-body .bubble:not(.current):not(.typing){display:none;}
 html:not(.embedded) .chat-body .bubble.current{max-width:100%;align-self:stretch;font-size:23px;line-height:1.4;padding:18px 18px 20px;}
-html:not(.embedded) .chat-body .bubble.current .bubble-label{font-size:14px;margin-bottom:8px;}
+html:not(.embedded) .chat-body .bubble.current .bubble-label{font-size:20px;text-align:center;margin-bottom:12px;}
 html:not(.embedded) .quick-replies{flex:1;display:flex;flex-direction:column;gap:12px;margin-top:0;}
 html:not(.embedded) .quick-reply{flex:1 1 0;min-height:66px;max-height:132px;font-size:23px;border-radius:16px;border-width:2px;}
 html:not(.embedded) .chat-foot{border-top:none;padding:0 16px 16px;}
@@ -725,7 +726,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Capt. Bob · Step 1 of 7</span>I'll find the best Miami Trawler dealer for you — 7 quick taps. New or used?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>I'll find the best Miami Trawler dealer for you — 7 quick taps. New or used?</div></div>
 
 <div class="chat-foot tap-only">
 <div class="input-row">
@@ -829,7 +830,7 @@ chatBody.querySelectorAll('.bubble.current').forEach(function (el) { el.classLis
 function stepTag() {
 try {
 const n = QUESTIONS.filter(q => q.options).length;
-if (!chatDone && QUESTIONS[step] && QUESTIONS[step].options) return ' · Step ' + (step + 1) + ' of ' + n;
+if (!chatDone && QUESTIONS[step] && QUESTIONS[step].options) return 'Step ' + (step + 1) + ' of ' + n;
 } catch (e) {}
 return '';
 }
@@ -842,8 +843,8 @@ clearCurrent();
 b.classList.add('current');
 const label = document.createElement('span');
 label.className = 'bubble-label';
-label.textContent = 'Capt. Bob' + stepTag();
-b.appendChild(label);
+label.textContent = stepTag();
+if (label.textContent) b.appendChild(label);
 }
 b.appendChild(document.createTextNode(text));
 chatBody.appendChild(b);
