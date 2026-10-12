@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   }
 
   try {
-        const { id, email, zip, site, name, use_case, people_aboard, location, budget_timeline, summary, messages, boat_types, source_metro } = req.body;
+        const { id, email, zip, site, name, use_case, people_aboard, location, budget_timeline, summary, messages, boat_types, source_metro, gclid } = req.body;
 
       // A lead needs only an email; zip code and name are optional.
       if (!email) {
@@ -50,6 +50,8 @@ export default async function handler(req, res) {
               updated_at: new Date().toISOString(),
       };
         if (id) row.id = id;
+        // Google ad click ID: tells us the buyer came from one of our ads.
+        if (gclid) row.gclid = String(gclid).slice(0, 200);
 
       const upsertRes = await fetch(`${supabaseUrl}/rest/v1/leads`, {
               method: 'POST',

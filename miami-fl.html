@@ -923,6 +923,7 @@ zip: leadZip,
 name: buyerFirstName,
 site: 'Trawlers.boats',
 source_metro: SOURCE_METRO,
+gclid: AD_CLICK_ID || undefined,
 messages: messages,
 ...extra,
 boat_types: selectedBoatTypes
@@ -944,6 +945,13 @@ console.error('Network error saving lead:', e);
 }
 
 // ---- Capt. Bob's fixed questions. Questions with "options" are answered by tap. ----
+// Remember the Google ad click ID (added to the address when someone clicks one of our ads).
+const AD_CLICK_ID = (function () {
+var id = '';
+try { var q = new URLSearchParams(location.search); id = q.get('gclid') || q.get('gbraid') || q.get('wbraid') || ''; } catch (e) {}
+try { if (id) sessionStorage.setItem('ad_click_id', id); else id = sessionStorage.getItem('ad_click_id') || ''; } catch (e) {}
+return id;
+})();
 const BOAT_TYPE = 'Trawlers';
 const QUESTIONS = [
 { key: 'newused', label: 'New or used', ask: "Are you looking for a new boat or a used one?", options: ['New', 'Used', 'Either'] },
