@@ -936,7 +936,7 @@ console.error('Network error saving lead:', e);
 // ---- Capt. Bob's fixed questions. Questions with "options" are answered by tap. ----
 const BOAT_TYPE = 'Trawlers';
 const QUESTIONS = [
-{ key: 'newused', label: 'New or used', ask: "Are you looking for a new boat or a used one?", options: ['New', 'Used', 'Both'] },
+{ key: 'newused', label: 'New or used', ask: "Are you looking for a new boat or a used one?", options: ['New', 'Used', 'Either'] },
 { key: 'use', label: 'Main use', ask: "What will you use it for most?", options: ['Fishing', 'Cruising', 'General recreation'] },
 { key: 'water', label: 'Water', ask: "Which type of water will you be on most?", options: ['Lakes', 'Rivers', 'Bays', 'Offshore'] },
 { key: 'people', label: 'People aboard', ask: "How many people would you typically take out?", options: ['1–2', '3–5', '6–8', '9 or more'] },
@@ -1151,6 +1151,7 @@ chatDone = true;
 try { chatInput.blur(); } catch (e) {}
 setInputMode(null);
 addMatchResultBubble();
+if (chatFoot) chatFoot.style.display = 'none';
 queueLeadSave();
 }
 
