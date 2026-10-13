@@ -726,7 +726,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>I'll find the best Miami Trawler dealer for you — 7 quick taps. New or used?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>I'll find the best Miami Trawler dealer for you. New or used?</div></div>
 
 <div class="chat-foot tap-only">
 <div class="input-row">
@@ -966,7 +966,7 @@ const QUESTIONS = [
 { key: 'name', ask: "Last thing — what's your first name?" }
 ];
 const BOAT_TYPE_ONE = /craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '');
-const OPENING_MESSAGE = "I'll find the best " + String(SOURCE_METRO).split(',')[0].trim() + " " + BOAT_TYPE_ONE + " dealer for you — 7 quick taps. New or used?";
+const OPENING_MESSAGE = "I'll find the best " + String(SOURCE_METRO).split(',')[0].trim() + " " + BOAT_TYPE_ONE + " dealer for you. New or used?";
 
 let step = 0;
 const answers = {};
