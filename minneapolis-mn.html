@@ -329,7 +329,8 @@ line-height: 1.5;
 }
 .bubble-label {
 display: block;
-font-size: 11px;
+text-align: center;
+font-size: 13px;
 font-weight: 700;
 letter-spacing: 0.03em;
 color: var(--teal-bright);
@@ -639,6 +640,50 @@ html:not(.embedded) .chat-card{height:auto;max-height:none;}
 html:not(.embedded) .hero h1{font-size:22px;}
 }
 /* --- end phone layout fix --- */
+
+/* --- tap-to-answer chat --- */
+.send-label{display:none;}
+.quick-replies{align-self:stretch;display:grid;grid-template-columns:1fr;gap:8px;margin-top:2px;}
+.quick-reply{width:100%;min-height:50px;padding:12px 10px;border-radius:12px;border:1.5px solid rgba(41,214,182,0.55);background:rgba(41,214,182,0.10);color:#fff;font-size:16px;font-weight:700;font-family:inherit;line-height:1.2;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:background .12s ease,color .12s ease;}
+.quick-reply:active{background:var(--teal);color:#06231d;border-color:var(--teal);}
+@media (hover:hover){.quick-reply:hover{background:var(--teal);color:#06231d;border-color:var(--teal);}}
+.quick-reply:focus-visible{outline:3px solid rgba(41,214,182,0.5);outline-offset:2px;}
+@media (min-width: 980px){.quick-replies{max-width:460px;}}
+/* On phones a tap question shows only the question and its answers: no typing row. */
+@media (max-width: 979px){
+html:not(.embedded) .chat-foot.tap-only{display:none;}
+html:not(.embedded) .eyebrow{display:none;}
+/* Phones show only the question and its answers: no site bar, headline, chat header or footer. */
+html:not(.embedded) .nav,
+html:not(.embedded) .hero h1,
+html:not(.embedded) .chat-head,
+html:not(.embedded) .wave-wrap,
+html:not(.embedded) footer{display:none;}
+html:not(.embedded),
+html:not(.embedded) body{background:var(--bg-dark);}
+/* Phones use the full display: one question at a time in large type, big answers below it. */
+html:not(.embedded) .hero{padding:10px;min-height:88vh;min-height:100dvh;display:flex;flex-direction:column;}
+html:not(.embedded) .hero-grid{flex:1;display:flex;flex-direction:column;gap:0;width:100%;}
+html:not(.embedded) .hero-grid > div:first-child{display:none;}
+html:not(.embedded) .chat-card{flex:1;}
+html:not(.embedded) .chat-body{flex:1;gap:14px;padding:16px;}
+html:not(.embedded) .chat-card.typed-step .chat-body{flex:0 0 auto;}
+html:not(.embedded) .chat-body .bubble:not(.current):not(.typing){display:none;}
+html:not(.embedded) .chat-body .bubble.current{max-width:100%;align-self:stretch;font-size:23px;line-height:1.4;padding:18px 18px 20px;}
+html:not(.embedded) .chat-body .bubble.current .bubble-label{font-size:20px;text-align:center;margin-bottom:12px;}
+html:not(.embedded) .quick-replies{flex:1;display:flex;flex-direction:column;gap:12px;margin-top:0;}
+html:not(.embedded) .quick-reply{flex:1 1 0;min-height:66px;max-height:132px;font-size:23px;border-radius:16px;border-width:2px;}
+html:not(.embedded) .chat-foot{border-top:none;padding:0 16px 16px;}
+/* Typed questions on phones: full-width text box with a full-width Submit button under it. */
+html:not(.embedded) .input-row{flex-direction:column;align-items:stretch;gap:12px;}
+html:not(.embedded) .icon-btn.mic{display:none;}
+html:not(.embedded) .input-row input{flex:none;width:100%;font-size:19px;}
+html:not(.embedded) .icon-btn.send{width:100%;height:64px;border-radius:16px;font-size:23px;}
+html:not(.embedded) .icon-btn.send:hover{transform:none;}
+html:not(.embedded) .send-icon{display:none;}
+html:not(.embedded) .send-label{display:inline;}
+}
+/* --- end tap-to-answer chat --- */
 </style>
 <script>if(window.parent!==window)document.documentElement.classList.add('embedded');</script>
 <!-- Capt. Bob conversion tracking (Google Ads) -->
@@ -681,13 +726,13 @@ html:not(.embedded) .hero h1{font-size:22px;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant"><span class="bubble-label">Capt. Bob</span>Hi, I'm Capt. Bob, your Personal Boat Advisor for Trawlers in Minneapolis–St. Paul! What's your first name?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>I'll find the best Minneapolis–St. Paul Trawler dealer for you. New or used?</div></div>
 
-<div class="chat-foot">
+<div class="chat-foot tap-only">
 <div class="input-row">
 <button class="icon-btn mic" id="micBtn" title="Speak instead of typing">🎤</button>
-<input type="text" id="chatInput" placeholder="First Name Please" autocomplete="off">
-<button class="icon-btn send" id="sendBtn" title="Send">➤</button>
+<input type="text" id="chatInput" placeholder="Or type here" autocomplete="off">
+<button class="icon-btn send" id="sendBtn" title="Send"><span class="send-icon">➤</span><span class="send-label">Submit</span></button>
 </div>
 </div>
 </div>
@@ -756,48 +801,13 @@ We'll use this to connect you with a local dealer. No spam, unsubscribe anytime.
 const chatBody = document.getElementById('chatBody');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
+const chatFoot = document.querySelector('.chat-foot');
+const chatCard = document.querySelector('.chat-card');
 const micBtn = document.getElementById('micBtn');
 const voiceToggle = document.getElementById('voiceToggle');
 const leadOverlay = document.getElementById('leadOverlay');
 const leadBody = document.getElementById('leadBody');
 const leadClose = document.getElementById('leadClose');
-
-const SYSTEM_PROMPT = `You are Capt. Bob, the AI buying assistant on Trawlers.boats, part of the AI Boat Leads network.
-You talk to prospective boat buyers the way a great, low-pressure salesperson would: warm, brief, one question at a time.
-
-You must ask these 10 questions IN THIS EXACT ORDER, one per reply, never skipping ahead or asking two at once. Use the wording shown, word for word:
-1. Please select the type you're interested in below.
-2. Are you looking for a new boat or a used one?
-3. How do you plan to use it — fishing, cruising or just general recreation?
-4. What type of water will you be on — lakes, rivers, bays or offshore?
-5. How many people would you typically take out?
-6. Will you be keeping the boat docked at the water, or will you be trailering it?
-7. What's your budget for the boat?
-8. When are you planning to make your purchase — are you ready to buy soon or in the early research phase?
-9. I'll need your zip code to find the closest dealer.
-10. And last thing — I'll need your email to send your dealer matches.
-
-Rules:
-- Each reply is the next question from the list above and nothing else: no praise, no comment on the buyer's previous answer, no extra sentences. The only change you may make to the wording is adding the buyer's first name, as described in the next rule.
-- Personalize with the buyer's first name where it reads naturally, at the start or the end of the question (for example "Bob, are you looking for a new boat or a used one?" or "What's your budget for the boat, Bob?"). Do this in roughly every second or third question, not in every one, and never force it where it sounds awkward.
-- Question 1 (boat type): the interface automatically shows the buyer a full selector right after this message, so do not name or describe any specific boat type or category yourself. End that specific reply with a new final line containing exactly: SHOW_BOAT_TYPES
-- That SHOW_BOAT_TYPES line must be the very last line of that first reply, alone, with nothing else on it, and must only ever appear once, on that first question.
-- Do not reorder, combine or skip questions, even if the buyer's earlier answer seems to partly cover a later question.
-- If the buyer asks you something, or gives a reply that does not answer the question, respond in one short sentence and then ask the same question again.
-- Each reply is max 2 sentences.
-- Question 9 (zip code): if what they give you isn't a valid 5-digit zip code, politely ask them to double-check it and send it again before moving on.
-- Question 10 (email): if what they give you doesn't look like a valid email address, politely ask them to double-check it and send it again before moving on.
-- Once all 10 questions are answered, reply only with a short thank-you saying you have everything you need (for example "Thanks, Bob — I have everything I need."). Do not promise matches, dealers, emails or any timing — the page shows the buyer what happens next right after your message. Then add a new final line containing exactly: MATCH_READY
-- That MATCH_READY line must be the very last line of your reply, alone, with nothing else on it. Never explain it to the user, never format it, and only include it the moment the conversation is truly complete.
-- Keep total replies short. No markdown, no bullet lists, just plain conversational text.`;
-
-const boatTypes = [
-"Airboats","Aluminum Fishing Boats","Bass Boats","Bay Boats","Bowriders",
-"Cabin Cruisers","Catamarans (Power/Sail)","Center Console Boats","Cuddy Cabins","Deck Boats",
-"Inflatable Boats","Dual Console Boats","Ski Boats","Skiff Boats","Houseboats",
-"Jet Boats","Jon Boats","Offshore Fishing Boats","Pontoon Boats","PWC (Personal Watercraft)",
-"Sailboats","Trawlers / Yachts"
-];
 
 let messages = [];
 let userTurns = 0;
@@ -805,22 +815,36 @@ let voiceOn = false;
 let recognizing = false;
 let leadCaptured = false;
 let leadRecordId = null;
-let selectedBoatTypes = [];
+let selectedBoatTypes = ["Trawlers / Yachts"];
 let leadEmail = null;
 let leadZip = null;
 let buyerFirstName = null;
-let activeSystemPrompt = SYSTEM_PROMPT;
 let pendingText = null;
-let pendingMatchReady = false;
+
+// On phones only the newest message from Capt. Bob is shown, one question at a time.
+function clearCurrent() {
+chatBody.querySelectorAll('.bubble.current').forEach(function (el) { el.classList.remove('current'); });
+}
+
+// "Step 3 of 7" on the tap questions so buyers can see how close they are.
+function stepTag() {
+try {
+const n = QUESTIONS.filter(q => q.options).length;
+if (!chatDone && QUESTIONS[step] && QUESTIONS[step].options) return 'Step ' + (step + 1) + ' of ' + n;
+} catch (e) {}
+return '';
+}
 
 function addBubble(role, text) {
 const b = document.createElement('div');
 b.className = 'bubble ' + role;
 if (role === 'assistant') {
+clearCurrent();
+b.classList.add('current');
 const label = document.createElement('span');
 label.className = 'bubble-label';
-label.textContent = 'Capt. Bob';
-b.appendChild(label);
+label.textContent = stepTag();
+if (label.textContent) b.appendChild(label);
 }
 b.appendChild(document.createTextNode(text));
 chatBody.appendChild(b);
@@ -829,57 +853,13 @@ return b;
 }
 
 function addTyping() {
+clearCurrent();
 const b = document.createElement('div');
 b.className = 'bubble assistant typing';
 b.innerHTML = '<span></span><span></span><span></span>';
 chatBody.appendChild(b);
 chatBody.scrollTop = chatBody.scrollHeight;
 return b;
-}
-
-function addBoatPicker() {
-const wrap = document.createElement('div');
-wrap.className = 'boat-picker';
-const grid = document.createElement('div');
-grid.className = 'boat-picker-grid';
-const selected = new Set();
-
-boatTypes.forEach(function(type){
-const chip = document.createElement('div');
-chip.className = 'boat-chip';
-chip.textContent = type;
-chip.addEventListener('click', function(){
-if (selected.has(type)) {
-selected.delete(type);
-chip.classList.remove('selected');
-} else {
-selected.add(type);
-chip.classList.add('selected');
-}
-submitBtn.disabled = selected.size === 0;
-});
-grid.appendChild(chip);
-});
-
-const submitBtn = document.createElement('button');
-submitBtn.className = 'boat-picker-submit';
-submitBtn.textContent = 'Continue';
-submitBtn.disabled = true;
-submitBtn.addEventListener('click', function(){
-selectedBoatTypes = Array.from(selected);
-const chosen = selectedBoatTypes.join(', ');
-wrap.remove();
-doSend(chosen);
-});
-
-wrap.appendChild(grid);
-wrap.appendChild(submitBtn);
-chatBody.appendChild(wrap);
-// Intentionally do not force-scroll to the bottom here — the instruction
-// message right above the picker was already scrolled into view when it was
-// added, so leaving scroll position alone keeps that instruction visible
-// instead of jumping straight to the bottom of the 20-item list.
-return wrap;
 }
 
 function speak(text) {
@@ -913,7 +893,7 @@ const res = await fetch(BACKEND_URL + "/api/chat", {
 method: "POST",
 headers: { "Content-Type": "application/json" },
 body: JSON.stringify({
-system: systemOverride || SYSTEM_PROMPT,
+system: systemOverride,
 messages: msgs,
 site: 'Trawlers.boats',
 page: SOURCE_METRO,
@@ -934,7 +914,7 @@ return "Sorry, I'm having trouble connecting right now — mind trying again in 
 }
 
 async function saveLeadProgress(extra) {
-if (!leadEmail || !leadZip) return;
+if (!leadEmail) return;
 try {
 const record = {
 id: leadRecordId || undefined,
@@ -943,6 +923,7 @@ zip: leadZip,
 name: buyerFirstName,
 site: 'Trawlers.boats',
 source_metro: SOURCE_METRO,
+gclid: AD_CLICK_ID || undefined,
 messages: messages,
 ...extra,
 boat_types: selectedBoatTypes
@@ -963,167 +944,321 @@ console.error('Network error saving lead:', e);
 }
 }
 
-function trySend(text) {
-if (!text || !text.trim()) return;
-if (!buyerFirstName) {
-setFirstName(text);
+// ---- Capt. Bob's fixed questions. Questions with "options" are answered by tap. ----
+// Remember the Google ad click ID (added to the address when someone clicks one of our ads).
+const AD_CLICK_ID = (function () {
+var id = '';
+try { var q = new URLSearchParams(location.search); id = q.get('gclid') || q.get('gbraid') || q.get('wbraid') || ''; } catch (e) {}
+try { if (id) sessionStorage.setItem('ad_click_id', id); else id = sessionStorage.getItem('ad_click_id') || ''; } catch (e) {}
+return id;
+})();
+const BOAT_TYPE = 'Trawlers';
+const QUESTIONS = [
+{ key: 'newused', label: 'New or used', ask: "Are you looking for a new boat or a used one?", options: ['New', 'Used', 'Either'] },
+{ key: 'use', label: 'Main use', ask: "What will you use it for most?", options: ['Fishing', 'Cruising', 'General recreation'] },
+{ key: 'water', label: 'Water', ask: "Which type of water will you be on most?", options: ['Lakes', 'Rivers', 'Bays', 'Offshore'] },
+{ key: 'people', label: 'People aboard', ask: "How many people would you typically take out?", options: ['1–2', '3–5', '6–8', '9 or more'] },
+{ key: 'dock', label: 'Storage', ask: "Will you keep the boat docked at the water, or trailer it?", options: ['Docked', 'Trailered'] },
+{ key: 'budget', label: 'Budget', ask: "What's your budget for the boat?", options: ['Under $100K', '$100K–$250K', '$250K–$500K', 'Over $500K'] },
+{ key: 'timing', label: 'Timing', ask: "When are you planning to buy?", options: ['Within 30 days', '1–3 months', '3–6 months', 'Just researching'] },
+{ key: 'email', ask: "Where can I send your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " dealer match?" },
+{ key: 'zip', ask: "And your zip code, to find the closest dealer." },
+{ key: 'name', ask: "Last thing — what's your first name?" }
+];
+const BOAT_TYPE_ONE = /craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '');
+const OPENING_MESSAGE = "I'll find the best " + String(SOURCE_METRO).split(',')[0].trim() + " " + BOAT_TYPE_ONE + " dealer for you. New or used?";
+
+let step = 0;
+const answers = {};
+let busy = false;
+let chatDone = false;
+let quickWrap = null;
+
+// The questions themselves are scripted, so Capt. Bob's AI is only called when a
+// buyer types something that isn't an answer (a question of their own, a comment).
+function helperPrompt(q) {
+const area = String(SOURCE_METRO).split(',')[0].trim();
+let p = `You are Capt. Bob, the friendly Personal Boat Advisor on Trawlers.boats, chatting with a buyer shopping for ${BOAT_TYPE} in the ${area} area. The page asks the buyer a fixed list of questions itself; you only step in when the buyer types something off the script. If they ask why you need their zip code or email: the zip code finds the closest dealer, and the email is how we let them know when a dealer who carries ${BOAT_TYPE} is ready to help. Dealers in the area are still being signed up, so never say that matches or a list of dealers will be sent.\n\n`;
+if (!q) {
+return p + `The buyer has already answered every question. Reply to their latest message in one or two short, helpful plain-text sentences. Never promise dealer matches, prices, emails or timing. No markdown, no lists.`;
+}
+p += `The question on the buyer's screen right now is: "${q.ask}"\n`;
+if (q.options) p += `The tap-to-answer buttons under it are: ${q.options.join(', ')}.\n`;
+p += `\nDecide which case the buyer's latest message is. A message that asks you something is always case B, even if it also hints at an answer.\n`;
+if (q.options) {
+p += `A) It answers that question, even if it is not one of the buttons. Reply with exactly the single word ANSWERED and nothing else.\n`;
+} else if (q.key === 'name') {
+p += `A) It gives their first name, or says they would rather not give a name. Reply with exactly the single word ANSWERED and nothing else.\n`;
+} else {
+p += `A) Does not apply here: the page checks this answer itself, so never reply ANSWERED.\n`;
+}
+p += `B) Anything else, such as a question for you, a comment, or something unclear. Reply in one or two short, helpful plain-text sentences. Do not ask a question and do not repeat the question on the screen, because the page asks it again right after your message. Never promise dealer matches, prices, emails or timing. No markdown, no lists.`;
+return p;
+}
+
+function clearQuickReplies() {
+if (quickWrap) { quickWrap.remove(); quickWrap = null; }
+}
+
+function setInputMode(key) {
+let type = 'text', mode = 'text', auto = 'off', hint = 'Or type here', enter = 'send';
+if (key === 'email') { type = 'email'; mode = 'email'; auto = 'email'; hint = 'Your email'; enter = 'next'; }
+else if (key === 'zip') { mode = 'numeric'; auto = 'postal-code'; hint = 'Zip code'; enter = 'next'; }
+else if (key === 'name') { auto = 'given-name'; hint = 'First name'; enter = 'done'; }
+else if (!key) { hint = 'Type a message'; }
+try { chatInput.type = type; } catch (e) {}
+chatInput.setAttribute('inputmode', mode);
+chatInput.setAttribute('autocomplete', auto);
+chatInput.setAttribute('enterkeyhint', enter);
+chatInput.setAttribute('name', key === 'email' ? 'email' : key === 'zip' ? 'postal-code' : key === 'name' ? 'given-name' : 'message');
+chatInput.placeholder = hint;
+}
+
+function showQuestionUI(q, quiet) {
+clearQuickReplies();
+chatFoot.classList.toggle('tap-only', !!(q && q.options));
+chatCard.classList.toggle('typed-step', !(q && q.options));
+setInputMode(q ? (q.options ? 'tap' : q.key) : null);
+if (q && q.options) {
+const wrap = document.createElement('div');
+wrap.className = 'quick-replies';
+const longest = Math.max.apply(null, q.options.map(function (o) { return o.length; }));
+if (q.options.length <= 3 && longest <= 9) wrap.style.gridTemplateColumns = 'repeat(' + q.options.length + ', 1fr)';
+else if (q.options.length === 4 && longest <= 16) wrap.style.gridTemplateColumns = '1fr 1fr';
+q.options.forEach(function (label) {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'quick-reply';
+btn.textContent = label;
+btn.addEventListener('click', function () { handleUser(label, true); });
+wrap.appendChild(btn);
+});
+chatBody.appendChild(wrap);
+quickWrap = wrap;
+}
+chatBody.scrollTop = chatBody.scrollHeight;
+if (!quiet) keepInView();
+}
+
+// Phones show one question per screen, so go back to the top of it for each new question.
+// (While the buyer is typing, the phone keeps the text box in view by itself.)
+function keepInView() {
+if (window.parent !== window) return;
+try {
+if (window.matchMedia && window.matchMedia('(max-width: 979px)').matches) {
+if (document.activeElement !== chatInput) window.scrollTo(0, 0);
 return;
 }
-doSend(text);
+const foot = document.querySelector('.chat-card');
+if (!foot) return;
+const vv = window.visualViewport;
+const visibleBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+const over = foot.getBoundingClientRect().bottom - visibleBottom;
+if (over > 0) window.scrollBy({ top: over + 8, behavior: 'smooth' });
+} catch (e) {}
 }
 
-function setFirstName(text) {
-const firstWord = text.trim().split(/\s+/)[0].replace(/[^a-zA-Z'-]/g, '');
-if (!firstWord) {
-chatInput.value = '';
-addBubble('assistant', "Sorry, I didn't catch that — what's your first name?");
-return;
+// A typed reply that plainly means one of the buttons counts as a tap on it.
+function matchOption(text, options) {
+const norm = function (s) { return String(s).toLowerCase().replace(/[–—-]/g, '-').replace(/[^a-z0-9$\- ]/g, ' ').replace(/\s+/g, ' ').trim(); };
+const t = norm(text);
+if (!t) return null;
+const exact = options.filter(function (o) { return norm(o) === t; });
+if (exact.length === 1) return exact[0];
+// A question, or a longer sentence, goes to Capt. Bob instead of being guessed at.
+if (t.length < 3 || /\?/.test(text) || t.split(' ').length > 4) return null;
+const near = options.filter(function (o) {
+const n = norm(o);
+return (' ' + t + ' ').indexOf(' ' + n + ' ') !== -1 || n.indexOf(t) === 0;
+});
+return near.length === 1 ? near[0] : null;
 }
-buyerFirstName = firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
-activeSystemPrompt = `The buyer just told you their first name is ${buyerFirstName}. Start your very next reply with a short greeting by name (for example "Nice to meet you, ${buyerFirstName}!") and then ask question 1 from the list below. After that, follow the first-name rule below all the way through to the final MATCH_READY message.
 
-` + SYSTEM_PROMPT;
-chatInput.placeholder = 'Tell us about the trawler you need…';
-doSend(text);
+function findEmail(text) {
+const m = String(text).match(/[^\s@<>(),;:"']+@[^\s@<>(),;:"']+\.[A-Za-z]{2,}/);
+return m ? m[0].replace(/[.!?]+$/, '') : null;
 }
 
-async function doSend(text) {
-if (!text || !text.trim()) return;
-chatInput.value = '';
+function findZip(text) {
+const m = String(text).match(/(?:^|\D)(\d{5})(?:-\d{4})?(?!\d)/);
+return m ? m[1] : null;
+}
+
+function findFirstName(text) {
+let t = String(text).trim();
+if (/[?@\d]/.test(t)) return null;
+const lead = t.match(/(?:name is|name's|i am|i'm|im|it's|its|call me|this is)\s+([A-Za-z][A-Za-z'-]*)/i);
+if (lead) t = lead[1];
+else if (t.split(/\s+/).length > 3) return null;
+const w = t.split(/\s+/)[0].replace(/[^a-zA-Z'-]/g, '');
+if (!w) return null;
+return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+}
+
+// Record that the buyer answered a step (content-free), without calling the AI.
+function logStep() {
+try {
+fetch(BACKEND_URL + "/api/chat", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+keepalive: true,
+body: JSON.stringify({ log_only: true, site: 'Trawlers.boats', page: SOURCE_METRO, session_id: CHAT_SESSION_ID })
+}).catch(function (e) { console.error('Step logging error:', e); });
+} catch (e) {}
+}
+
+// The lead's details come straight from the buyer's answers, so they are never guessed.
+function leadFields() {
+const parts = QUESTIONS.filter(function (q) { return q.label && answers[q.key]; }).map(function (q) { return q.label + ': ' + answers[q.key]; });
+return {
+use_case: answers.use || 'Not specified',
+people_aboard: answers.people || 'Not specified',
+location: answers.water || 'Not specified',
+budget_timeline: [answers.budget, answers.timing].filter(Boolean).join(', ') || 'Not specified',
+summary: 'Shopping for ' + BOAT_TYPE + ' near ' + SOURCE_METRO + '. ' + parts.join('. ') + (parts.length ? '.' : '')
+};
+}
+
+// The lead is saved as soon as the buyer gives an email; the zip code and first name are added to it when they come in.
+// Saves run one at a time so a second save always reuses the first one's lead record.
+let saveQueue = Promise.resolve();
+function queueLeadSave() {
+if (!leadEmail) return saveQueue;
+leadCaptured = true;
+saveQueue = saveQueue.then(function () { return saveLeadProgress(leadFields()); });
+return saveQueue;
+}
+
+function say(text) {
+addBubble('assistant', text);
+messages.push({ role: 'assistant', content: text });
+speak(text);
+}
+
+function askQuestion(q) {
+say(q.ask);
+showQuestionUI(q);
+}
+
+function acceptAnswer(q, value) {
+answers[q.key] = value;
+if (q.key === 'email') leadEmail = value;
+else if (q.key === 'zip') leadZip = value;
+else if (q.key === 'name') buyerFirstName = value;
+step++;
+// Skip email or zip if the buyer already gave it (for example through the sign-up box).
+while (QUESTIONS[step] && ((QUESTIONS[step].key === 'email' && leadEmail) || (QUESTIONS[step].key === 'zip' && leadZip))) step++;
+clearQuickReplies();
+const next = QUESTIONS[step];
+if (!next) { finishChat(); return; }
+if (!next.options) {
+// Switch the keyboard (email, numbers, name) while we are still inside the buyer's tap.
+try { chatFoot.classList.remove('tap-only'); chatCard.classList.add('typed-step'); chatInput.blur(); setInputMode(next.key); chatInput.focus(); } catch (e) {}
+}
+queueLeadSave();
+busy = true;
+const typingEl = addTyping();
+setTimeout(function () {
+typingEl.remove();
+busy = false;
+askQuestion(next);
+}, 350);
+}
+
+function finishChat() {
+chatDone = true;
+try { chatInput.blur(); } catch (e) {}
+setInputMode(null);
+addMatchResultBubble();
+if (chatFoot) chatFoot.style.display = 'none';
+queueLeadSave();
+}
+
+// Off-script message: let Capt. Bob answer it, then put the same question back up.
+async function talk(q) {
+busy = true;
 sendBtn.disabled = true;
+clearQuickReplies();
+const typingEl = addTyping();
+let answered = false;
+try {
+const raw = String(await callClaude(messages, helperPrompt(q)) || '').trim();
+typingEl.remove();
+if (q && (q.options || q.key === 'name') && /^ANSWERED\b/i.test(raw)) {
+answered = true;
+} else {
+const reply = raw.replace(/^ANSWERED\b[\s.:—-]*/i, '').trim() || "Sorry, I didn't catch that.";
+say(q ? reply + ' ' + q.ask : reply);
+}
+} catch (e) {
+typingEl.remove();
+say(q ? "Sorry, I didn't catch that. " + q.ask : "Sorry, I didn't catch that.");
+}
+busy = false;
+sendBtn.disabled = false;
+// Put the buttons back under the question that was just asked again.
+if (!answered && q) showQuestionUI(q);
+else { chatBody.scrollTop = chatBody.scrollHeight; keepInView(); }
+return answered;
+}
+
+async function handleUser(raw, tapped) {
+const text = String(raw || '').trim();
+if (!text || busy) return;
+chatInput.value = '';
+const q = chatDone ? null : QUESTIONS[step];
 addBubble('user', text);
 messages.push({ role: 'user', content: text });
 userTurns++;
+if (!q) { await talk(null); return; }
 
-const typingEl = addTyping();
-let matchReady = false;
-let showBoatTypes = false;
-try {
-const rawReply = await callClaude(messages, activeSystemPrompt);
-typingEl.remove();
-const lines = rawReply.split('\n');
-while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
-if (lines.length && lines[lines.length - 1].trim() === 'MATCH_READY') {
-matchReady = true;
-lines.pop();
-}
-if (lines.length && lines[lines.length - 1].trim() === 'SHOW_BOAT_TYPES') {
-showBoatTypes = true;
-lines.pop();
-}
-const reply = lines.join('\n').trim();
-addBubble('assistant', reply);
-messages.push({ role: 'assistant', content: reply });
-speak(reply);
-if (showBoatTypes) {
-addBoatPicker();
-}
-} catch (e) {
-typingEl.remove();
-addBubble('assistant', "Having trouble connecting right now — mind trying again in a moment?");
-}
-sendBtn.disabled = false;
-saveLeadProgress();
-if (matchReady) {
-if (!leadCaptured) {
-await captureLeadFromConversation();
-}
-if (leadCaptured) {
-getMatches();
-} else {
-pendingMatchReady = true;
-openGate();
-}
-}
+let value = null;
+let nudge = null;
+if (q.options) {
+value = tapped ? text : matchOption(text, q.options);
+} else if (q.key === 'email') {
+value = findEmail(text);
+if (!value && (text.indexOf('@') !== -1 || !/\s/.test(text))) nudge = "That email doesn't look right. Could you double-check it and send it again?";
+} else if (q.key === 'zip') {
+value = findZip(text);
+if (!value && /\d/.test(text)) nudge = "I need a 5-digit zip code. Could you double-check it and send it again?";
+} else if (q.key === 'name') {
+value = findFirstName(text);
 }
 
-// Data extraction uses its own instructions (not Capt. Bob's chat rules),
-// so the reply comes back as clean JSON instead of conversation.
-const EXTRACT_SYSTEM_PROMPT = `You are a data extraction tool for a boat-buying chat. Read the conversation and reply with ONLY the single JSON object requested in the last message. No greeting, no explanation, no markdown fences. Use the buyer's actual answers wherever they gave them.`;
-
-function parseJsonReply(raw) {
-const text = String(raw || '').replace(/```json|```/g, '');
-const start = text.indexOf('{');
-const end = text.lastIndexOf('}');
-if (start === -1 || end <= start) throw new Error('No JSON in reply');
-return JSON.parse(text.slice(start, end + 1));
+if (value) { logStep(); acceptAnswer(q, value); return; }
+if (nudge) { logStep(); say(nudge); keepInView(); return; }
+const answered = await talk(q);
+if (answered) acceptAnswer(q, q.key === 'name' ? (findFirstName(text) || null) : text);
 }
 
-async function captureLeadFromConversation() {
-const extractPrompt = `Based on the conversation so far, return ONLY a JSON object, nothing else, no markdown fences, with this exact shape:
-{"zip":"...","email":"..."}
-Extract the exact 5-digit zip code and exact email address the buyer provided earlier in this conversation. If either one is missing or doesn't look valid, use null for that field instead of guessing.`;
-try {
-const msgs = messages.concat([{ role: 'user', content: extractPrompt }]);
-const raw = await callClaude(msgs, EXTRACT_SYSTEM_PROMPT);
-const data = parseJsonReply(raw);
-const zip = (data.zip || '').toString().trim();
-const email = (data.email || '').toString().trim();
-const zipValid = /^\d{5}$/.test(zip);
-const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-if (zipValid && emailValid) {
-leadZip = zip;
-leadEmail = email;
-leadCaptured = true;
-await saveLeadProgress();
-}
-} catch (e) {
-console.error('Lead extraction error:', e);
-}
-}
-
-async function getMatches() {
-const extractPrompt = `Based on the conversation so far, return ONLY a JSON object, nothing else, no markdown fences, with this exact shape:
-{"use_case":"...","people_aboard":"...","location":"...","budget_timeline":"...","summary":"2-3 sentence natural summary of what they're looking for, written in second person as if speaking directly to the buyer (e.g. 'You're looking for...')"}
-If any field wasn't mentioned, make a reasonable brief guess based on context, or use "Not specified".`;
-let data;
-try {
-const msgs = messages.concat([{ role: 'user', content: extractPrompt }]);
-const raw = await callClaude(msgs, EXTRACT_SYSTEM_PROMPT);
-data = parseJsonReply(raw);
-} catch (e) {
-data = {
-use_case: "Trawler shopper",
-people_aboard: "Not specified",
-location: "Not specified",
-budget_timeline: "Not specified",
-summary: "We couldn't auto-summarize this one, but your conversation has been saved so we can follow up with matches."
-};
-}
-addMatchResultBubble(data);
-saveLeadProgress(data);
+function trySend(text) {
+handleUser(text, false);
 }
 
 let matchResultShown = false;
 
-function addMatchResultBubble(d) {
+function addMatchResultBubble() {
 // Phase 1 dealer matching isn't live yet, so every buyer sees the honest
 // "no match yet" state. Once /api/match.js exists, replace `false` below
 // with the real match result.
 const realMatchFound = false;
 
-// Show the result once per chat, even if a later reply signals MATCH_READY again.
+// Show the result once per chat.
 if (matchResultShown) return;
 matchResultShown = true;
 
 const metroName = String(SOURCE_METRO || '').split(',')[0].trim();
 const areaText = metroName ? `the ${metroName} area` : 'your area';
-const boatText = (selectedBoatTypes && selectedBoatTypes.length) ? selectedBoatTypes.join(' or ') : 'the boat you want';
-const thanksText = buyerFirstName ? `Thanks, ${buyerFirstName}.` : 'Thanks.';
-
-const headline = realMatchFound
-? 'Good news — we found a local dealer for you!'
-: `${thanksText} I've saved everything you told me.`;
+const boatText = BOAT_TYPE;
+const thanksText = buyerFirstName ? `Thanks, ${buyerFirstName} — I have everything I need.` : 'Thanks — I have everything I need.';
 
 const subline = realMatchFound
-? `A dealer in ${areaText} carries the boat you're looking for and will be contacting you shortly at ${leadEmail || 'your email'}.`
+? `Good news — a dealer in ${areaText} carries the boat you're looking for and will be contacting you shortly at ${leadEmail || 'your email'}.`
 : `We're still signing up dealers in ${areaText}, so we'll email you as soon as one who carries ${boatText} is ready to help.`;
 
-const text = `${headline} ${subline}`;
-
-addBubble('assistant', text);
-messages.push({ role: 'assistant', content: text });
-speak(text);
+say(`${thanksText} ${subline}`);
+keepInView();
 }
 
 function escapeHtml(s) {
@@ -1193,33 +1328,19 @@ if (!email || !zip) return;
 
 leadEmail = email;
 leadZip = zip;
-messages.push({ role: 'user', content: `(System note: this buyer already provided their zip code, ${zip}. Do not ask them for their zip code or location again.)` });
-leadCaptured = true;
-
 gateOverlay.classList.remove('show');
-
-// initial save: capture email, zip, and the full conversation now that it's complete
-await saveLeadProgress();
-
-if (pendingMatchReady) {
-pendingMatchReady = false;
-getMatches();
-return;
-}
+await queueLeadSave();
 
 const toSend = pendingText;
 pendingText = null;
 if (toSend) {
-if (!buyerFirstName) {
-setFirstName(toSend);
-} else {
-doSend(toSend);
-}
+handleUser(toSend, false);
 }
 });
 
 // opening message
-messages.push({ role: 'assistant', content: "Hi, I'm Capt. Bob, your Personal Boat Advisor for Trawlers in Minneapolis–St. Paul! What's your first name?" });
+messages.push({ role: 'assistant', content: OPENING_MESSAGE });
+showQuestionUI(QUESTIONS[0], true);
 })();
 </script>
 
