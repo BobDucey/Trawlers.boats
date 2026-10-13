@@ -17,11 +17,11 @@ export default async function handler(req, res) {
   }
 
   try {
-        const { id, email, zip, site, name, use_case, people_aboard, location, budget_timeline, summary, messages, boat_types, source_metro, gclid } = req.body;
+        const { id, email, phone, zip, site, name, use_case, people_aboard, location, budget_timeline, summary, messages, boat_types, source_metro, gclid } = req.body;
 
-      // A lead needs only an email; zip code and name are optional.
-      if (!email) {
-              return res.status(400).json({ error: 'email is required' });
+      // A lead needs an email or a phone number; zip code and name are optional.
+      if (!email && !phone) {
+              return res.status(400).json({ error: 'email or phone is required' });
       }
 
       const supabaseUrl = process.env.SUPABASE_URL;
@@ -35,7 +35,8 @@ export default async function handler(req, res) {
       // update that same row (so the chat transcript keeps growing on one
       // record instead of creating a new lead every message).
       const row = {
-              email,
+              email: email || null,
+              phone: phone ? String(phone).slice(0, 40) : null,
               zip: zip || null,
               site: site || null,
               name: name || null,
