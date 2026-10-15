@@ -730,7 +730,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>Good news! We can match you with a Miami Trawler dealer. Want us to send you their info?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>Good News! We found a Miami Trawler dealer. Should we send you the information?</div></div>
 
 <div class="chat-foot tap-only">
 <div class="input-row">
@@ -961,7 +961,7 @@ return id;
 const BOAT_TYPE = 'Trawlers';
 const BOAT_TYPE_ONE = (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, ''));
 const METRO_NAME = String(SOURCE_METRO).split(',')[0].trim();
-const OPENING_MESSAGE = "Good news! We can match you with a " + METRO_NAME + " " + BOAT_TYPE_ONE + " dealer. Want us to send you their info?";
+const OPENING_MESSAGE = "Good News! We found a " + METRO_NAME + " " + BOAT_TYPE_ONE + " dealer. Should we send you the information?";
 const QUESTIONS = [
 { key: 'start', ask: OPENING_MESSAGE, options: ['Yes'] },
 { key: 'email', ask: "Great! What's the best email to send your dealer info to?" },
