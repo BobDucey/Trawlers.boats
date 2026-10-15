@@ -643,6 +643,8 @@ html:not(.embedded) .hero h1{font-size:22px;}
 
 /* --- tap-to-answer chat --- */
 .send-label{display:none;}
+/* Tap questions are answered with the buttons only: no typing row on any screen. */
+.chat-foot.tap-only{display:none;}
 .quick-replies{align-self:stretch;display:grid;grid-template-columns:1fr;gap:8px;margin-top:2px;}
 .quick-reply{width:100%;min-height:50px;padding:12px 10px;border-radius:12px;border:1.5px solid rgba(41,214,182,0.55);background:rgba(41,214,182,0.10);color:#fff;font-size:16px;font-weight:700;font-family:inherit;line-height:1.2;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:background .12s ease,color .12s ease;}
 .quick-reply:active{background:var(--teal);color:#06231d;border-color:var(--teal);}
