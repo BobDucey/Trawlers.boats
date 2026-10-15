@@ -684,6 +684,10 @@ html:not(.embedded) .send-icon{display:none;}
 html:not(.embedded) .send-label{display:inline;}
 }
 /* --- end tap-to-answer chat --- */
+.phone-extra{text-align:center;margin-top:10px;}
+.phone-extra[hidden]{display:none;}
+.phone-consent{font-size:12px;line-height:1.35;color:rgba(255,255,255,0.62);}
+.use-email{background:none;border:0;color:var(--teal-bright);text-decoration:underline;font-size:16px;font-family:inherit;padding:10px 12px 2px;cursor:pointer;}
 </style>
 <script>if(window.parent!==window)document.documentElement.classList.add('embedded');</script>
 <!-- Capt. Bob conversion tracking (Google Ads) -->
@@ -726,7 +730,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>I'll find the best Portland Trawler dealer for you. New or used?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>Good News! We found a Portland Trawler dealer. Should we send you the information?</div></div>
 
 <div class="chat-foot tap-only">
 <div class="input-row">
@@ -734,6 +738,7 @@ html:not(.embedded) .send-label{display:inline;}
 <input type="text" id="chatInput" placeholder="Or type here" autocomplete="off">
 <button class="icon-btn send" id="sendBtn" title="Send"><span class="send-icon">➤</span><span class="send-label">Submit</span></button>
 </div>
+<div class="phone-extra" id="phoneExtra" hidden><div class="phone-consent">By entering your number you agree a dealer may call or text you.</div><button type="button" class="use-email" id="useEmailBtn">Use email instead</button></div>
 </div>
 </div>
 </div>
@@ -817,6 +822,7 @@ let leadCaptured = false;
 let leadRecordId = null;
 let selectedBoatTypes = ["Trawlers / Yachts"];
 let leadEmail = null;
+let leadPhone = null;
 let leadZip = null;
 let buyerFirstName = null;
 let pendingText = null;
@@ -829,8 +835,7 @@ chatBody.querySelectorAll('.bubble.current').forEach(function (el) { el.classLis
 // "Step 3 of 7" on the tap questions so buyers can see how close they are.
 function stepTag() {
 try {
-const n = QUESTIONS.filter(q => q.options).length;
-if (!chatDone && QUESTIONS[step] && QUESTIONS[step].options) return 'Step ' + (step + 1) + ' of ' + n;
+if (!chatDone && QUESTIONS[step]) return 'Step ' + (step + 1) + ' of ' + QUESTIONS.length;
 } catch (e) {}
 return '';
 }
@@ -914,11 +919,12 @@ return "Sorry, I'm having trouble connecting right now — mind trying again in 
 }
 
 async function saveLeadProgress(extra) {
-if (!leadEmail) return;
+if (!leadEmail && !leadPhone) return;
 try {
 const record = {
 id: leadRecordId || undefined,
-email: leadEmail,
+email: leadEmail || null,
+phone: leadPhone || null,
 zip: leadZip,
 name: buyerFirstName,
 site: 'Trawlers.boats',
@@ -953,20 +959,20 @@ try { if (id) sessionStorage.setItem('ad_click_id', id); else id = sessionStorag
 return id;
 })();
 const BOAT_TYPE = 'Trawlers';
+const BOAT_TYPE_ONE = (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, ''));
+const METRO_NAME = String(SOURCE_METRO).split(',')[0].trim();
+const A_METRO = (/^[AEIOU]/i.test(METRO_NAME) ? "an " : "a ") + METRO_NAME;
+const OPENING_MESSAGE = "Good News! We found " + A_METRO + " " + BOAT_TYPE_ONE + " dealer. Should we send you the information?";
 const QUESTIONS = [
-{ key: 'newused', label: 'New or used', ask: "Are you looking for a new boat or a used one?", options: ['New', 'Used', 'Either'] },
-{ key: 'use', label: 'Main use', ask: "What will you use it for most?", options: ['Fishing', 'Cruising', 'General recreation'] },
-{ key: 'water', label: 'Water', ask: "Which type of water will you be on most?", options: ['Lakes', 'Rivers', 'Bays', 'Offshore'] },
-{ key: 'people', label: 'People aboard', ask: "How many people would you typically take out?", options: ['1–2', '3–5', '6–8', '9 or more'] },
-{ key: 'dock', label: 'Storage', ask: "Will you keep the boat docked at the water, or trailer it?", options: ['Docked', 'Trailered'] },
-{ key: 'budget', label: 'Budget', ask: "What's your budget for the boat?", options: ['Under $100K', '$100K–$250K', '$250K–$500K', 'Over $500K'] },
+{ key: 'start', ask: OPENING_MESSAGE, options: ['Yes'] },
+{ key: 'email', ask: "Great! What's the best email to send your dealer info to?" },
+{ key: 'newused', label: 'New or used', ask: "Are you looking for new or used?", options: ['New', 'Used', 'Either'] },
+{ key: 'budget', label: 'Budget', ask: "What's your budget for the boat?", options: ['Under $25K', '$25K–$50K', '$50K–$100K', '$100K–$250K', 'Over $250K'] },
 { key: 'timing', label: 'Timing', ask: "When are you planning to buy?", options: ['Within 30 days', '1–3 months', '3–6 months', 'Just researching'] },
-{ key: 'email', ask: "Where can I send your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " dealer match?" },
-{ key: 'zip', ask: "And your zip code, to find the closest dealer." },
-{ key: 'name', ask: "Last thing — what's your first name?" }
+{ key: 'name', ask: "We'd like to personalize our response. What's your first name?" },
+{ key: 'zip', ask: "Last thing: what's your zip code?" }
 ];
-const BOAT_TYPE_ONE = /craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '');
-const OPENING_MESSAGE = "I'll find the best " + String(SOURCE_METRO).split(',')[0].trim() + " " + BOAT_TYPE_ONE + " dealer for you. New or used?";
+const EMAIL_Q = { key: 'email', ask: "No problem. Where can I email your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " dealer match?" };
 
 let step = 0;
 const answers = {};
@@ -978,9 +984,9 @@ let quickWrap = null;
 // buyer types something that isn't an answer (a question of their own, a comment).
 function helperPrompt(q) {
 const area = String(SOURCE_METRO).split(',')[0].trim();
-let p = `You are Capt. Bob, the friendly Personal Boat Advisor on Trawlers.boats, chatting with a buyer shopping for ${BOAT_TYPE} in the ${area} area. The page asks the buyer a fixed list of questions itself; you only step in when the buyer types something off the script. If they ask why you need their zip code or email: the zip code finds the closest dealer, and the email is how we let them know when a dealer who carries ${BOAT_TYPE} is ready to help. Dealers in the area are still being signed up, so never say that matches or a list of dealers will be sent.\n\n`;
+let p = `You are Capt. Bob, the friendly Personal Boat Advisor on Trawlers.boats, chatting with a buyer shopping for ${BOAT_TYPE} in the ${area} area. The page asks the buyer a fixed list of questions itself; you only step in when the buyer types something off the script. If they ask why you need their zip code or email: the zip code finds the closest dealer, and the email is where we send their dealer info, and the first name lets us personalize our response.\n\n`;
 if (!q) {
-return p + `The buyer has already answered every question. Reply to their latest message in one or two short, helpful plain-text sentences. Never promise dealer matches, prices, emails or timing. No markdown, no lists.`;
+return p + `The buyer has already answered every question. Reply to their latest message in one or two short, helpful plain-text sentences. Never promise prices or timing. No markdown, no lists.`;
 }
 p += `The question on the buyer's screen right now is: "${q.ask}"\n`;
 if (q.options) p += `The tap-to-answer buttons under it are: ${q.options.join(', ')}.\n`;
@@ -992,7 +998,7 @@ p += `A) It gives their first name, or says they would rather not give a name. R
 } else {
 p += `A) Does not apply here: the page checks this answer itself, so never reply ANSWERED.\n`;
 }
-p += `B) Anything else, such as a question for you, a comment, or something unclear. Reply in one or two short, helpful plain-text sentences. Do not ask a question and do not repeat the question on the screen, because the page asks it again right after your message. Never promise dealer matches, prices, emails or timing. No markdown, no lists.`;
+p += `B) Anything else, such as a question for you, a comment, or something unclear. Reply in one or two short, helpful plain-text sentences. Do not ask a question and do not repeat the question on the screen, because the page asks it again right after your message. Never promise prices or timing. No markdown, no lists.`;
 return p;
 }
 
@@ -1003,6 +1009,7 @@ if (quickWrap) { quickWrap.remove(); quickWrap = null; }
 function setInputMode(key) {
 let type = 'text', mode = 'text', auto = 'off', hint = 'Or type here', enter = 'send';
 if (key === 'email') { type = 'email'; mode = 'email'; auto = 'email'; hint = 'Your email'; enter = 'next'; }
+else if (key === 'phone') { type = 'tel'; mode = 'tel'; auto = 'tel'; hint = 'Mobile number'; enter = 'next'; }
 else if (key === 'zip') { mode = 'numeric'; auto = 'postal-code'; hint = 'Zip code'; enter = 'next'; }
 else if (key === 'name') { auto = 'given-name'; hint = 'First name'; enter = 'done'; }
 else if (!key) { hint = 'Type a message'; }
@@ -1010,7 +1017,8 @@ try { chatInput.type = type; } catch (e) {}
 chatInput.setAttribute('inputmode', mode);
 chatInput.setAttribute('autocomplete', auto);
 chatInput.setAttribute('enterkeyhint', enter);
-chatInput.setAttribute('name', key === 'email' ? 'email' : key === 'zip' ? 'postal-code' : key === 'name' ? 'given-name' : 'message');
+try { document.getElementById('phoneExtra').hidden = key !== 'phone'; } catch (e) {}
+chatInput.setAttribute('name', key === 'phone' ? 'tel' : key === 'email' ? 'email' : key === 'zip' ? 'postal-code' : key === 'name' ? 'given-name' : 'message');
 chatInput.placeholder = hint;
 }
 
@@ -1079,6 +1087,13 @@ const m = String(text).match(/[^\s@<>(),;:"']+@[^\s@<>(),;:"']+\.[A-Za-z]{2,}/);
 return m ? m[0].replace(/[.!?]+$/, '') : null;
 }
 
+function findPhone(text) {
+let d = String(text).replace(/\D/g, '');
+if (d.length === 11 && d[0] === '1') d = d.slice(1);
+if (d.length !== 10 || /^[01]/.test(d) || /^\d{3}[01]/.test(d) || /^(\d)\1+$/.test(d)) return null;
+return '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6);
+}
+
 function findZip(text) {
 const m = String(text).match(/(?:^|\D)(\d{5})(?:-\d{4})?(?!\d)/);
 return m ? m[1] : null;
@@ -1123,7 +1138,7 @@ summary: 'Shopping for ' + BOAT_TYPE + ' near ' + SOURCE_METRO + '. ' + parts.jo
 // Saves run one at a time so a second save always reuses the first one's lead record.
 let saveQueue = Promise.resolve();
 function queueLeadSave() {
-if (!leadEmail) return saveQueue;
+if (!leadEmail && !leadPhone) return saveQueue;
 leadCaptured = true;
 saveQueue = saveQueue.then(function () { return saveLeadProgress(leadFields()); });
 return saveQueue;
@@ -1136,18 +1151,19 @@ speak(text);
 }
 
 function askQuestion(q) {
-say(q.ask);
+say((q.key === 'newused' && leadEmail && !answers.newused ? 'Thanks! We\'ll send it to ' + leadEmail + '. ' : '') + q.ask);
 showQuestionUI(q);
 }
 
 function acceptAnswer(q, value) {
 answers[q.key] = value;
 if (q.key === 'email') leadEmail = value;
+else if (q.key === 'phone') leadPhone = value;
 else if (q.key === 'zip') leadZip = value;
 else if (q.key === 'name') buyerFirstName = value;
 step++;
 // Skip email or zip if the buyer already gave it (for example through the sign-up box).
-while (QUESTIONS[step] && ((QUESTIONS[step].key === 'email' && leadEmail) || (QUESTIONS[step].key === 'zip' && leadZip))) step++;
+while (QUESTIONS[step] && (((QUESTIONS[step].key === 'email' || QUESTIONS[step].key === 'phone') && (leadEmail || leadPhone)) || (QUESTIONS[step].key === 'zip' && leadZip))) step++;
 clearQuickReplies();
 const next = QUESTIONS[step];
 if (!next) { finishChat(); return; }
@@ -1219,6 +1235,10 @@ value = tapped ? text : matchOption(text, q.options);
 } else if (q.key === 'email') {
 value = findEmail(text);
 if (!value && (text.indexOf('@') !== -1 || !/\s/.test(text))) nudge = "That email doesn't look right. Could you double-check it and send it again?";
+} else if (q.key === 'phone') {
+value = findPhone(text);
+if (!value && findEmail(text)) { logStep(); acceptAnswer(EMAIL_Q, findEmail(text)); return; }
+if (!value && /\d/.test(text)) nudge = "I need a 10-digit mobile number. Could you double-check it and send it again?";
 } else if (q.key === 'zip') {
 value = findZip(text);
 if (!value && /\d/.test(text)) nudge = "I need a 5-digit zip code. Could you double-check it and send it again?";
@@ -1254,10 +1274,10 @@ const boatText = BOAT_TYPE;
 const thanksText = buyerFirstName ? `Thanks, ${buyerFirstName} — I have everything I need.` : 'Thanks — I have everything I need.';
 
 const subline = realMatchFound
-? `Good news — a dealer in ${areaText} carries the boat you're looking for and will be contacting you shortly at ${leadEmail || 'your email'}.`
-: `We're still signing up dealers in ${areaText}, so we'll email you as soon as one who carries ${boatText} is ready to help.`;
+? `Good news — a dealer in ${areaText} carries the boat you're looking for and will be contacting you shortly at ${leadPhone || leadEmail || 'your email'}.`
+: `We're still signing up dealers in ${areaText}, so we'll ${leadPhone && !leadEmail ? 'text' : 'email'} you as soon as one who carries ${boatText} is ready to help.`;
 
-say(`${thanksText} ${subline}`);
+say((buyerFirstName ? 'Thank you, ' + buyerFirstName + '! ' : 'Thank you! ') + 'We\'ll pass your request to ' + A_METRO + ' ' + BOAT_TYPE_ONE + ' dealer, and they\'ll contact you.');
 keepInView();
 }
 
@@ -1266,6 +1286,12 @@ return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&l
 }
 
 // events
+document.getElementById('useEmailBtn').addEventListener('click', function () {
+if (busy || chatDone || !QUESTIONS[step] || QUESTIONS[step].key !== 'phone') return;
+QUESTIONS[step] = EMAIL_Q;
+try { chatInput.value = ''; chatInput.blur(); setInputMode('email'); chatInput.focus(); } catch (e) {}
+askQuestion(EMAIL_Q);
+});
 sendBtn.addEventListener('click', () => trySend(chatInput.value));
 chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') trySend(chatInput.value); });
 leadClose.addEventListener('click', () => leadOverlay.classList.remove('show'));

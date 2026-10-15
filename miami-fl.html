@@ -961,7 +961,8 @@ return id;
 const BOAT_TYPE = 'Trawlers';
 const BOAT_TYPE_ONE = (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, ''));
 const METRO_NAME = String(SOURCE_METRO).split(',')[0].trim();
-const OPENING_MESSAGE = "Good News! We found a " + METRO_NAME + " " + BOAT_TYPE_ONE + " dealer. Should we send you the information?";
+const A_METRO = (/^[AEIOU]/i.test(METRO_NAME) ? "an " : "a ") + METRO_NAME;
+const OPENING_MESSAGE = "Good News! We found " + A_METRO + " " + BOAT_TYPE_ONE + " dealer. Should we send you the information?";
 const QUESTIONS = [
 { key: 'start', ask: OPENING_MESSAGE, options: ['Yes'] },
 { key: 'email', ask: "Great! What's the best email to send your dealer info to?" },
@@ -1276,7 +1277,7 @@ const subline = realMatchFound
 ? `Good news — a dealer in ${areaText} carries the boat you're looking for and will be contacting you shortly at ${leadPhone || leadEmail || 'your email'}.`
 : `We're still signing up dealers in ${areaText}, so we'll ${leadPhone && !leadEmail ? 'text' : 'email'} you as soon as one who carries ${boatText} is ready to help.`;
 
-say((buyerFirstName ? 'Thank you, ' + buyerFirstName + '! ' : 'Thank you! ') + 'We\'ll pass your request to a ' + METRO_NAME + ' ' + BOAT_TYPE_ONE + ' dealer, and they\'ll contact you.');
+say((buyerFirstName ? 'Thank you, ' + buyerFirstName + '! ' : 'Thank you! ') + 'We\'ll pass your request to ' + A_METRO + ' ' + BOAT_TYPE_ONE + ' dealer, and they\'ll contact you.');
 keepInView();
 }
 
