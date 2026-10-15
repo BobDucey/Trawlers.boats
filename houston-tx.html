@@ -730,7 +730,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>Good News! We found a Houston Trawler dealer. Should we send you the information?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>Good News! We found a Houston Trawler dealer. How should we send it to you?</div></div>
 
 <div class="chat-foot tap-only">
 <div class="input-row">
@@ -962,9 +962,9 @@ const BOAT_TYPE = 'Trawlers';
 const BOAT_TYPE_ONE = (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, ''));
 const METRO_NAME = String(SOURCE_METRO).split(',')[0].trim();
 const A_METRO = (/^[AEIOU]/i.test(METRO_NAME) ? "an " : "a ") + METRO_NAME;
-const OPENING_MESSAGE = "Good News! We found " + A_METRO + " " + BOAT_TYPE_ONE + " dealer. Should we send you the information?";
+const OPENING_MESSAGE = "Good News! We found " + A_METRO + " " + BOAT_TYPE_ONE + " dealer. How should we send it to you?";
 const QUESTIONS = [
-{ key: 'start', ask: OPENING_MESSAGE, options: ['Yes'] },
+{ key: 'start', ask: OPENING_MESSAGE, options: ['Email', 'Text'] },
 { key: 'email', ask: "Great! What's the best email to send your dealer info to?" },
 { key: 'newused', label: 'New or used', ask: "Are you looking for new or used?", options: ['New', 'Used', 'Either'] },
 { key: 'budget', label: 'Budget', ask: "What's your budget for the boat?", options: ['Under $25K', '$25K–$50K', '$50K–$100K', '$100K–$250K', 'Over $250K'] },
@@ -972,6 +972,7 @@ const QUESTIONS = [
 { key: 'name', ask: "We'd like to personalize our response. What's your first name?" },
 { key: 'zip', ask: "Last thing: what's your zip code?" }
 ];
+const PHONE_Q = { key: 'phone', ask: "Great! What's the best mobile number to text it to?" };
 const EMAIL_Q = { key: 'email', ask: "No problem. Where can I email your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " dealer match?" };
 
 let step = 0;
@@ -1151,12 +1152,13 @@ speak(text);
 }
 
 function askQuestion(q) {
-say((q.key === 'newused' && leadEmail && !answers.newused ? 'Thanks! We\'ll send it to ' + leadEmail + '. ' : '') + q.ask);
+say((q.key === 'newused' && (leadPhone || leadEmail) && !answers.newused ? 'Thanks! We\'ll send it to ' + (leadPhone || leadEmail) + '. ' : '') + q.ask);
 showQuestionUI(q);
 }
 
 function acceptAnswer(q, value) {
 answers[q.key] = value;
+if (q.key === 'start' && /text/i.test(value)) QUESTIONS[1] = PHONE_Q;
 if (q.key === 'email') leadEmail = value;
 else if (q.key === 'phone') leadPhone = value;
 else if (q.key === 'zip') leadZip = value;
