@@ -736,7 +736,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span>I'll find the best New York Trawler dealer for you. Are you looking for new or used?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span><strong>I'll find the best New York Trawler dealer for you.</strong> Are you looking for new or used?</div></div>
 
 <div class="chat-foot tap-only">
 <div class="input-row">
@@ -859,6 +859,8 @@ if (label.textContent) b.appendChild(label);
 }
 const ann = role === 'assistant' && /^Good News!\s*/.exec(text);
 if (ann) { const a = document.createElement('span'); a.className = 'announce'; a.textContent = 'Good News!'; b.appendChild(a); text = text.slice(ann[0].length); }
+const lead = role === 'assistant' && /^I'll find the best .*? for you\.\s*/.exec(text);
+if (lead) { const st = document.createElement('strong'); st.textContent = lead[0].trim(); b.appendChild(st); b.appendChild(document.createTextNode(' ')); text = text.slice(lead[0].length); }
 b.appendChild(document.createTextNode(text));
 chatBody.appendChild(b);
 chatBody.scrollTop = chatBody.scrollHeight;
