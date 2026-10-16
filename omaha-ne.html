@@ -645,6 +645,8 @@ html:not(.embedded) .hero h1{font-size:22px;}
 .send-label{display:none;}
 /* Tap questions are answered with the buttons only: no typing row on any screen. */
 .chat-foot.tap-only{display:none;}
+/* "Good News!" is shown as an announcement above the message. */
+.bubble .announce{display:block;font-size:1.75em;line-height:1.15;font-weight:800;color:#F2C14E;text-align:center;letter-spacing:.01em;margin:2px 0 12px;}
 /* One question per screen everywhere: earlier questions and answers are hidden. */
 .chat-body .bubble:not(.current):not(.typing){display:none;}
 .quick-replies{align-self:stretch;display:grid;grid-template-columns:1fr;gap:8px;margin-top:2px;}
@@ -855,6 +857,8 @@ label.className = 'bubble-label';
 label.textContent = stepTag();
 if (label.textContent) b.appendChild(label);
 }
+const ann = role === 'assistant' && /^Good News!\s*/.exec(text);
+if (ann) { const a = document.createElement('span'); a.className = 'announce'; a.textContent = 'Good News!'; b.appendChild(a); text = text.slice(ann[0].length); }
 b.appendChild(document.createTextNode(text));
 chatBody.appendChild(b);
 chatBody.scrollTop = chatBody.scrollHeight;
