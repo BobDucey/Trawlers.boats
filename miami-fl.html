@@ -738,7 +738,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 6</span><span class="announce lead">I'll build your free Miami Trawler report.</span>Are you looking for new or used?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 5</span><span class="announce lead">I'll send you a free Miami Trawler report.</span>Are you looking for a new or used trawler?</div></div>
 
 <div class="chat-foot tap-only">
 <div class="input-row">
@@ -863,7 +863,7 @@ if (label.textContent) b.appendChild(label);
 }
 const ann = role === 'assistant' && /^Good News!\s*/.exec(text);
 if (ann) { const a = document.createElement('span'); a.className = 'announce'; a.textContent = 'Good News!'; b.appendChild(a); text = text.slice(ann[0].length); }
-const lead = role === 'assistant' && /^I'll build your free .*? report\.\s*/.exec(text);
+const lead = role === 'assistant' && /^I'll send you a free .*? report\.\s*/.exec(text);
 if (lead) { const st = document.createElement('span'); st.className = 'announce lead'; st.textContent = lead[0].trim(); b.appendChild(st); text = text.slice(lead[0].length); }
 b.appendChild(document.createTextNode(text));
 chatBody.appendChild(b);
@@ -977,19 +977,19 @@ const BOAT_TYPE_ONE = (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace
 const METRO_NAME = String(SOURCE_METRO).split(',')[0].trim();
 const A_METRO = (/^[AEIOU]/i.test(METRO_NAME) ? "an " : "a ") + METRO_NAME;
 const OPENING_MESSAGE = "Good News! We found " + A_METRO + " " + BOAT_TYPE_ONE + " dealer. How should we send it to you?";
-const FIRST_QUESTION = "I'll build your free " + METRO_NAME + " " + BOAT_TYPE_ONE + " report. Are you looking for new or used?";
+const FIRST_QUESTION = "I'll send you a free " + METRO_NAME + " " + BOAT_TYPE_ONE + " report. Are you looking for a new or used " + BOAT_TYPE_ONE.toLowerCase() + "?";
 const QUESTIONS = [
 { key: 'newused', label: 'New or used', ask: FIRST_QUESTION, options: ['New', 'Used', 'Either'] },
+{ key: 'email', ask: "What's your email, in case we lose connection? That's where your " + BOAT_TYPE_ONE + " Report will be sent." },
 { key: 'budget', label: 'Budget', ask: "What's your budget for the boat?", options: ['Under $25K', '$25K–$50K', '$50K–$100K', '$100K–$250K', 'Over $250K'] },
 { key: 'timing', label: 'Timing', ask: "When are you planning to buy?", options: ['Within 30 days', '1–3 months', '3–6 months', 'Just researching'] },
-{ key: 'email', ask: "Good News! Your " + BOAT_TYPE_ONE + " report is ready. What's the best email to send it to?" },
-{ key: 'name', ask: "What's your first name? We'll put it on your report." },
-{ key: 'zip', ask: "Last thing: your zip code? We'll add local prices and the closest dealers." }
+{ key: 'name', ask: "Last thing: what's your first name? We'll put it on your report." }
 ];
 const PHONE_Q = { key: 'phone', ask: "Great! What's the best mobile number to text your dealer info to?" };
 const EMAIL_Q = { key: 'email', ask: "No problem. Where can I email your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " report?" };
 
 let step = 0;
+let justGotEmail = false;
 const answers = {};
 let busy = false;
 let chatDone = false;
@@ -1032,7 +1032,7 @@ try { chatInput.type = type; } catch (e) {}
 chatInput.setAttribute('inputmode', mode);
 chatInput.setAttribute('autocomplete', auto);
 chatInput.setAttribute('enterkeyhint', enter);
-try { document.getElementById('phoneExtra').hidden = key !== 'phone'; document.getElementById('emailExtra').hidden = key !== 'email'; document.getElementById('changeEmailExtra').hidden = !((key === 'name' || key === 'zip') && leadEmail); } catch (e) {}
+try { document.getElementById('phoneExtra').hidden = key !== 'phone'; document.getElementById('emailExtra').hidden = key !== 'email'; document.getElementById('changeEmailExtra').hidden = !(key === 'name' && leadEmail); } catch (e) {}
 chatInput.setAttribute('name', key === 'phone' ? 'tel' : key === 'email' ? 'email' : key === 'zip' ? 'postal-code' : key === 'name' ? 'given-name' : 'message');
 chatInput.placeholder = hint;
 }
@@ -1166,20 +1166,21 @@ speak(text);
 }
 
 function askQuestion(q) {
-say((q.key === 'name' && (leadPhone || leadEmail) && !answers.name ? 'Thanks! We\'ll send it to ' + (leadPhone || leadEmail) + '. ' : '') + q.ask);
+say((justGotEmail && (leadPhone || leadEmail) ? 'Thanks! Your report will go to ' + (leadPhone || leadEmail) + '. ' : '') + q.ask);
+justGotEmail = false;
 showQuestionUI(q);
 }
 
 function acceptAnswer(q, value) {
 answers[q.key] = value;
 if (q.key === 'start' && /text/i.test(value)) QUESTIONS[QUESTIONS.findIndex(function (x) { return x.key === 'email'; })] = PHONE_Q;
-if (q.key === 'email') leadEmail = value;
+if (q.key === 'email') { leadEmail = value; justGotEmail = true; }
 else if (q.key === 'phone') leadPhone = value;
 else if (q.key === 'zip') leadZip = value;
 else if (q.key === 'name') buyerFirstName = value;
 step++;
 // Skip email or zip if the buyer already gave it (for example through the sign-up box).
-while (QUESTIONS[step] && (((QUESTIONS[step].key === 'email' || QUESTIONS[step].key === 'phone') && (leadEmail || leadPhone)) || (QUESTIONS[step].key === 'zip' && leadZip) || (QUESTIONS[step].key === 'name' && buyerFirstName))) step++;
+while (QUESTIONS[step] && (answers[QUESTIONS[step].key] || ((QUESTIONS[step].key === 'email' || QUESTIONS[step].key === 'phone') && (leadEmail || leadPhone)) || (QUESTIONS[step].key === 'zip' && leadZip) || (QUESTIONS[step].key === 'name' && buyerFirstName))) step++;
 clearQuickReplies();
 const next = QUESTIONS[step];
 if (!next) { finishChat(); return; }
