@@ -721,7 +721,7 @@ html:not(.embedded) .send-label{display:inline;}
 <div class="hero-grid">
 <div>
 <div class="eyebrow">Talk to us: Text/Voice</div>
-<h1>Best Dealer in New Orleans selling Trawlers & Yachts - Chat with me - Free</h1>
+<h1>Capt. Bob's Free New Orleans Trawler Report</h1>
 <div class="hero-split">
 <div class="hero-photo-wrap"><img src="/capt-bob-hero.jpg" alt="Capt. Bob"></div>
 </div>
@@ -738,7 +738,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 7</span><span class="announce lead">I'll find the best New Orleans Trawler dealer for you.</span>Are you looking for new or used?</div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 6</span><span class="announce lead">I'll build your free New Orleans Trawler report.</span>Are you looking for new or used?</div></div>
 
 <div class="chat-foot tap-only">
 <div class="input-row">
@@ -747,6 +747,8 @@ html:not(.embedded) .send-label{display:inline;}
 <button class="icon-btn send" id="sendBtn" title="Send"><span class="send-icon">➤</span><span class="send-label">Submit</span></button>
 </div>
 <div class="phone-extra" id="phoneExtra" hidden><div class="phone-consent">By entering your number you agree a dealer may call or text you.</div><button type="button" class="use-email" id="useEmailBtn">Use email instead</button></div>
+<div class="phone-extra" id="changeEmailExtra" hidden><button type="button" class="use-email" id="changeEmailBtn">Wrong email? Change it</button></div>
+<div class="phone-extra" id="emailExtra" hidden><div class="phone-consent">We'll email your report, and a local dealer may contact you.</div></div>
 </div>
 </div>
 </div>
@@ -782,7 +784,7 @@ html:not(.embedded) .send-label{display:inline;}
 <div class="lead-overlay" id="gateOverlay">
 <div class="lead-card">
 <div class="lead-card-head">
-<span class="tag">GET YOUR DEALER MATCH</span>
+<span class="tag">GET YOUR FREE REPORT</span>
 <button class="close" id="gateClose">✕</button>
 </div>
 <div class="lead-card-body">
@@ -798,7 +800,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 <div class="lead-actions">
-<button type="submit" class="btn-primary">Get My Dealer Match</button>
+<button type="submit" class="btn-primary">Send My Report</button>
 <button type="button" class="btn-ghost" id="gateCancel">Not now</button>
 </div>
 </form>
@@ -861,7 +863,7 @@ if (label.textContent) b.appendChild(label);
 }
 const ann = role === 'assistant' && /^Good News!\s*/.exec(text);
 if (ann) { const a = document.createElement('span'); a.className = 'announce'; a.textContent = 'Good News!'; b.appendChild(a); text = text.slice(ann[0].length); }
-const lead = role === 'assistant' && /^I'll find the best .*? for you\.\s*/.exec(text);
+const lead = role === 'assistant' && /^I'll build your free .*? report\.\s*/.exec(text);
 if (lead) { const st = document.createElement('span'); st.className = 'announce lead'; st.textContent = lead[0].trim(); b.appendChild(st); text = text.slice(lead[0].length); }
 b.appendChild(document.createTextNode(text));
 chatBody.appendChild(b);
@@ -975,18 +977,17 @@ const BOAT_TYPE_ONE = (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace
 const METRO_NAME = String(SOURCE_METRO).split(',')[0].trim();
 const A_METRO = (/^[AEIOU]/i.test(METRO_NAME) ? "an " : "a ") + METRO_NAME;
 const OPENING_MESSAGE = "Good News! We found " + A_METRO + " " + BOAT_TYPE_ONE + " dealer. How should we send it to you?";
-const FIRST_QUESTION = "I'll find the best " + METRO_NAME + " " + BOAT_TYPE_ONE + " dealer for you. Are you looking for new or used?";
+const FIRST_QUESTION = "I'll build your free " + METRO_NAME + " " + BOAT_TYPE_ONE + " report. Are you looking for new or used?";
 const QUESTIONS = [
 { key: 'newused', label: 'New or used', ask: FIRST_QUESTION, options: ['New', 'Used', 'Either'] },
 { key: 'budget', label: 'Budget', ask: "What's your budget for the boat?", options: ['Under $25K', '$25K–$50K', '$50K–$100K', '$100K–$250K', 'Over $250K'] },
 { key: 'timing', label: 'Timing', ask: "When are you planning to buy?", options: ['Within 30 days', '1–3 months', '3–6 months', 'Just researching'] },
-{ key: 'start', ask: OPENING_MESSAGE, options: ['Email', 'Text'] },
-{ key: 'email', ask: "Great! What's the best email to send your dealer info to?" },
-{ key: 'name', ask: "We'd like to personalize our response. What's your first name?" },
-{ key: 'zip', ask: "Last thing: what's your zip code? We use it to find the dealer closest to you for prices and quotes." }
+{ key: 'email', ask: "Good News! Your " + BOAT_TYPE_ONE + " report is ready. What's the best email to send it to?" },
+{ key: 'name', ask: "What's your first name? We'll put it on your report." },
+{ key: 'zip', ask: "Last thing: your zip code? We'll add local prices and the closest dealers." }
 ];
 const PHONE_Q = { key: 'phone', ask: "Great! What's the best mobile number to text your dealer info to?" };
-const EMAIL_Q = { key: 'email', ask: "No problem. Where can I email your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " dealer match?" };
+const EMAIL_Q = { key: 'email', ask: "No problem. Where can I email your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " report?" };
 
 let step = 0;
 const answers = {};
@@ -1031,7 +1032,7 @@ try { chatInput.type = type; } catch (e) {}
 chatInput.setAttribute('inputmode', mode);
 chatInput.setAttribute('autocomplete', auto);
 chatInput.setAttribute('enterkeyhint', enter);
-try { document.getElementById('phoneExtra').hidden = key !== 'phone'; } catch (e) {}
+try { document.getElementById('phoneExtra').hidden = key !== 'phone'; document.getElementById('emailExtra').hidden = key !== 'email'; document.getElementById('changeEmailExtra').hidden = !((key === 'name' || key === 'zip') && leadEmail); } catch (e) {}
 chatInput.setAttribute('name', key === 'phone' ? 'tel' : key === 'email' ? 'email' : key === 'zip' ? 'postal-code' : key === 'name' ? 'given-name' : 'message');
 chatInput.placeholder = hint;
 }
@@ -1178,7 +1179,7 @@ else if (q.key === 'zip') leadZip = value;
 else if (q.key === 'name') buyerFirstName = value;
 step++;
 // Skip email or zip if the buyer already gave it (for example through the sign-up box).
-while (QUESTIONS[step] && (((QUESTIONS[step].key === 'email' || QUESTIONS[step].key === 'phone') && (leadEmail || leadPhone)) || (QUESTIONS[step].key === 'zip' && leadZip))) step++;
+while (QUESTIONS[step] && (((QUESTIONS[step].key === 'email' || QUESTIONS[step].key === 'phone') && (leadEmail || leadPhone)) || (QUESTIONS[step].key === 'zip' && leadZip) || (QUESTIONS[step].key === 'name' && buyerFirstName))) step++;
 clearQuickReplies();
 const next = QUESTIONS[step];
 if (!next) { finishChat(); return; }
@@ -1292,7 +1293,22 @@ const subline = realMatchFound
 ? `Good news — a dealer in ${areaText} carries the boat you're looking for and will be contacting you shortly at ${leadPhone || leadEmail || 'your email'}.`
 : `We're still signing up dealers in ${areaText}, so we'll ${leadPhone && !leadEmail ? 'text' : 'email'} you as soon as one who carries ${boatText} is ready to help.`;
 
-say((buyerFirstName ? 'Thank you, ' + buyerFirstName + '! ' : 'Thank you! ') + 'We\'ll pass your request to ' + A_METRO + ' ' + BOAT_TYPE_ONE + ' dealer, and they\'ll contact you.');
+say((buyerFirstName ? 'Thanks, ' + buyerFirstName + '! ' : 'Thanks! ') + 'Your ' + BOAT_TYPE_ONE + ' report is on its way' + (leadEmail ? ' to ' + leadEmail : '') + '. Open the email from Capt. Bob and tap Review Report. If you don\'t see it in a few minutes, check your spam folder.');
+if (leadEmail) {
+const w = document.createElement('div'); w.className = 'quick-replies'; w.style.gridTemplateColumns = '1fr';
+const cb = document.createElement('button'); cb.className = 'quick-reply'; cb.textContent = 'Wrong email? Change it';
+cb.addEventListener('click', function () {
+w.remove(); chatDone = false; matchResultShown = false;
+if (chatFoot) chatFoot.style.display = '';
+document.getElementById('changeEmailBtn').hidden = false;
+const i = QUESTIONS.findIndex(function (x) { return x.key === 'email'; });
+step = i; leadEmail = null; delete answers.email;
+try { chatInput.value = ''; setInputMode('email'); chatInput.focus(); } catch (e) {}
+say("No problem. What's the right email for your report?");
+showQuestionUI(QUESTIONS[i]);
+});
+w.appendChild(cb); chatBody.appendChild(w);
+}
 keepInView();
 }
 
@@ -1306,6 +1322,15 @@ if (busy || chatDone || !QUESTIONS[step] || QUESTIONS[step].key !== 'phone') ret
 QUESTIONS[step] = EMAIL_Q;
 try { chatInput.value = ''; chatInput.blur(); setInputMode('email'); chatInput.focus(); } catch (e) {}
 askQuestion(EMAIL_Q);
+});
+document.getElementById('changeEmailBtn').addEventListener('click', function () {
+if (busy || chatDone) return;
+const i = QUESTIONS.findIndex(function (x) { return x.key === 'email'; });
+if (i < 0) return;
+step = i; leadEmail = null; delete answers.email;
+try { chatInput.value = ''; chatInput.blur(); setInputMode('email'); chatInput.focus(); } catch (e) {}
+say("No problem. What's the right email for your report?");
+showQuestionUI(QUESTIONS[i]);
 });
 sendBtn.addEventListener('click', () => trySend(chatInput.value));
 chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') trySend(chatInput.value); });
