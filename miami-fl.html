@@ -980,16 +980,17 @@ const OPENING_MESSAGE = "Good News! We found " + A_METRO + " " + BOAT_TYPE_ONE +
 const FIRST_QUESTION = "I'll send you a free " + METRO_NAME + " " + BOAT_TYPE_ONE + " report. What email should I send it to?";
 const QUESTIONS = [
 { key: 'email', ask: FIRST_QUESTION },
+{ key: 'name', ask: "What's your first name? I'll use it to personalize your report." },
 { key: 'newused', label: 'New or used', ask: "Are you looking for a new or used " + BOAT_TYPE_ONE.toLowerCase() + "?", options: ['New', 'Used', 'Either'] },
 { key: 'budget', label: 'Budget', ask: "What's your budget for the boat?", options: ['Under $25K', '$25K–$50K', '$50K–$100K', '$100K–$250K', 'Over $250K'] },
-{ key: 'timing', label: 'Timing', ask: "When are you planning to buy?", options: ['Within 30 days', '1–3 months', '3–6 months', 'Just researching'] },
-{ key: 'name', ask: "Last thing: we'd like to address your report to you. What's your first name?" }
+{ key: 'timing', label: 'Timing', ask: "When are you planning to buy?", options: ['Within 30 days', '1–3 months', '3–6 months', 'Just researching'] }
 ];
 const PHONE_Q = { key: 'phone', ask: "Great! What's the best mobile number to text your dealer info to?" };
 const EMAIL_Q = { key: 'email', ask: "No problem. Where can I email your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " report?" };
 
 let step = 0;
 let justGotEmail = false;
+let justGotName = false;
 const answers = {};
 let busy = false;
 let chatDone = false;
@@ -1166,8 +1167,9 @@ speak(text);
 }
 
 function askQuestion(q) {
-say((justGotEmail && (leadPhone || leadEmail) ? 'Thanks! Your report will go to ' + (leadPhone || leadEmail) + '. ' : '') + q.ask);
+say((justGotEmail && (leadPhone || leadEmail) ? 'Thanks! Your report will go to ' + (leadPhone || leadEmail) + '. ' : '') + (justGotName && buyerFirstName ? 'Thanks, ' + buyerFirstName + '! ' : '') + q.ask);
 justGotEmail = false;
+justGotName = false;
 showQuestionUI(q);
 }
 
@@ -1177,7 +1179,7 @@ if (q.key === 'start' && /text/i.test(value)) QUESTIONS[QUESTIONS.findIndex(func
 if (q.key === 'email') { leadEmail = value; justGotEmail = true; }
 else if (q.key === 'phone') leadPhone = value;
 else if (q.key === 'zip') leadZip = value;
-else if (q.key === 'name') buyerFirstName = value;
+else if (q.key === 'name') { buyerFirstName = value; justGotName = true; }
 step++;
 // Skip email or zip if the buyer already gave it (for example through the sign-up box).
 while (QUESTIONS[step] && (answers[QUESTIONS[step].key] || ((QUESTIONS[step].key === 'email' || QUESTIONS[step].key === 'phone') && (leadEmail || leadPhone)) || (QUESTIONS[step].key === 'zip' && leadZip) || (QUESTIONS[step].key === 'name' && buyerFirstName))) step++;
