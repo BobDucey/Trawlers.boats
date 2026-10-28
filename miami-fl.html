@@ -738,7 +738,7 @@ html:not(.embedded) .send-label{display:inline;}
 </div>
 </div>
 
-<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 5</span><span class="announce lead">I'll send you a free Miami Trawler report.</span>What email should I send it to?<br><span style="opacity:.8;font-style:italic">¿A qué correo electrónico se lo envío?</span></div></div>
+<div class="chat-body" id="chatBody"><div class="bubble assistant current"><span class="bubble-label">Step 1 of 5</span><span class="announce lead">I'll send you a free Miami Trawler report.</span><span style="display:block;text-align:center;color:#9fe8d8;font-size:.95em;margin:-6px 0 10px">2026 prices, top brands, new vs. used and buying tips.</span>What email should I send it to?<br><span style="opacity:.8;font-style:italic">¿A qué correo electrónico se lo envío?</span></div></div>
 
 <div class="chat-foot">
 <div class="input-row">
@@ -977,7 +977,7 @@ const BOAT_TYPE_ONE = (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace
 const METRO_NAME = String(SOURCE_METRO).split(',')[0].trim();
 const A_METRO = (/^[AEIOU]/i.test(METRO_NAME) ? "an " : "a ") + METRO_NAME;
 const OPENING_MESSAGE = "Good News! We found " + A_METRO + " " + BOAT_TYPE_ONE + " dealer. How should we send it to you?";
-const FIRST_QUESTION = "I'll send you a free " + METRO_NAME + " " + BOAT_TYPE_ONE + " report. What email should I send it to? (¿A qué correo electrónico se lo envío?)";
+const FIRST_QUESTION = "I'll send you a free " + METRO_NAME + " " + BOAT_TYPE_ONE + " report. 2026 prices, top brands, new vs. used and buying tips. What email should I send it to? (¿A qué correo electrónico se lo envío?)";
 const QUESTIONS = [
 { key: 'email', ask: FIRST_QUESTION },
 { key: 'name', ask: "What's your first name? I'll use it to personalize your report." },
