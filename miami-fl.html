@@ -868,7 +868,10 @@ const ann = role === 'assistant' && /^Good News!\s*/.exec(text);
 if (ann) { const a = document.createElement('span'); a.className = 'announce'; a.textContent = 'Good News!'; b.appendChild(a); text = text.slice(ann[0].length); }
 const lead = role === 'assistant' && /^(I'll send you a free .*? report\.|Want your free .*? report to cover new or used\?)\s*/.exec(text);
 if (lead) { const st = document.createElement('span'); st.className = 'announce lead'; st.textContent = lead[0].trim(); b.appendChild(st); text = text.slice(lead[0].length); }
+const es = role === 'assistant' && /\s*\((¿[^)]*\?)\)\s*$/.exec(text); /* ES-line */
+if (es) text = text.slice(0, es.index);
 b.appendChild(document.createTextNode(text));
+if (es) { b.appendChild(document.createElement('br')); const sp = document.createElement('span'); sp.style.cssText = 'opacity:.8;font-style:italic'; sp.textContent = es[1]; b.appendChild(sp); }
 chatBody.appendChild(b);
 chatBody.scrollTop = chatBody.scrollHeight;
 return b;
@@ -991,7 +994,7 @@ const QUESTIONS = [
 { key: 'timing', label: 'Timing', ask: "When are you planning to buy?", options: ['Within 30 days', '1–3 months', '3–6 months', 'Just researching'] }
 ];
 // Chat test (2026-10-29): half of visitors (B) are asked new/used for their report first, then email.
-if (CHAT_VARIANT === 'B') { const nuI = QUESTIONS.findIndex(function (x) { return x.key === 'newused'; }); const nu = QUESTIONS.splice(nuI, 1)[0]; nu.ask = "Want your free " + METRO_NAME + " " + BOAT_TYPE_ONE + " report to cover new or used?"; nu.options = ['New', 'Used', 'Both']; QUESTIONS.unshift(nu); const emI = QUESTIONS.findIndex(function (x) { return x.key === 'email'; }); QUESTIONS[emI] = { key: 'email', ask: "Great, what email should I send it to? (¿A qué correo electrónico se lo envío?)" }; }
+if (CHAT_VARIANT === 'B') { const nuI = QUESTIONS.findIndex(function (x) { return x.key === 'newused'; }); const nu = QUESTIONS.splice(nuI, 1)[0]; nu.ask = "I'll send you a free " + METRO_NAME + " " + BOAT_TYPE_ONE + " report. Should it cover new or used?"; nu.options = ['New', 'Used', 'Both']; QUESTIONS.unshift(nu); const emI = QUESTIONS.findIndex(function (x) { return x.key === 'email'; }); QUESTIONS[emI] = { key: 'email', ask: "Great, what email should I send it to? (¿A qué correo electrónico se lo envío?)" }; }
 const PHONE_Q = { key: 'phone', ask: "Great! What's the best mobile number to text your dealer info to?" };
 const EMAIL_Q = { key: 'email', ask: "No problem. Where can I email your " + (/craft$/i.test(BOAT_TYPE) ? BOAT_TYPE : BOAT_TYPE.replace(/s$/, '')) + " report?" };
 
@@ -1446,7 +1449,7 @@ handleUser(toSend, false);
 
 // opening message
 messages.push({ role: 'assistant', content: QUESTIONS[0].ask });
-if (CHAT_VARIANT === 'B') { chatBody.innerHTML = ''; const b0 = addBubble('assistant', QUESTIONS[0].ask); const d0 = document.createElement('span'); d0.style.cssText = 'display:block;text-align:center;color:#9fe8d8;font-size:.95em;margin:-6px 0 4px'; d0.textContent = '2026 prices, top brands, new vs. used and buying tips.'; b0.appendChild(d0); }
+if (CHAT_VARIANT === 'B') { chatBody.innerHTML = ''; const b0 = addBubble('assistant', QUESTIONS[0].ask); const d0 = document.createElement('span'); d0.style.cssText = 'display:block;text-align:center;color:#9fe8d8;font-size:.95em;margin:-6px 0 10px'; d0.textContent = '2026 prices, top brands, new vs. used and buying tips.'; const a0 = b0.querySelector('.announce'); if (a0) a0.after(d0); else b0.appendChild(d0); }
 showQuestionUI(QUESTIONS[0], true);
 })();
 </script>
