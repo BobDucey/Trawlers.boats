@@ -1349,21 +1349,6 @@ const subline = realMatchFound
 : `We're still signing up dealers in ${areaText}, so we'll ${leadPhone && !leadEmail ? 'text' : 'email'} you as soon as one who carries ${boatText} is ready to help.`;
 
 say((buyerFirstName ? 'Thanks, ' + buyerFirstName + '! ' : 'Thanks! ') + 'Your ' + BOAT_TYPE_ONE + ' report is on its way' + (leadEmail ? ' to ' + leadEmail : '') + '. Open the email from Capt. Bob and tap Review Report. If you don\'t see it in a few minutes, check your spam folder.');
-if (leadEmail) {
-const w = document.createElement('div'); w.className = 'quick-replies'; w.style.gridTemplateColumns = '1fr';
-const cb = document.createElement('button'); cb.className = 'quick-reply'; cb.textContent = 'Wrong email? Change it';
-cb.addEventListener('click', function () {
-w.remove(); chatDone = false; matchResultShown = false;
-if (chatFoot) chatFoot.style.display = '';
-document.getElementById('changeEmailBtn').hidden = false;
-const i = QUESTIONS.findIndex(function (x) { return x.key === 'email'; });
-step = i; leadEmail = null; delete answers.email;
-try { chatInput.value = ''; setInputMode('email'); chatInput.focus(); } catch (e) {}
-say("No problem. What's the right email for your report?");
-showQuestionUI(QUESTIONS[i]);
-});
-w.appendChild(cb); chatBody.appendChild(w);
-}
 keepInView();
 }
 
