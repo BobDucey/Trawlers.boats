@@ -895,6 +895,7 @@ window.speechSynthesis.speak(u);
 }
 
 const BACKEND_URL = 'https://trawlers-boats.vercel.app';
+const VERIFY_URL = 'https://imgjgrpmjoqlghbkmesy.supabase.co/functions/v1/email-verify';
 const CHAT_VARIANT = (function () { var v = ''; try { v = sessionStorage.getItem('chat_variant') || ''; } catch (e) {} if (v !== 'A' && v !== 'B') { v = Math.random() < 0.5 ? 'A' : 'B'; try { sessionStorage.setItem('chat_variant', v); } catch (e) {} } return v; })();
 const CHAT_SESSION_ID = CHAT_VARIANT + '-sess_' + Date.now() + '_' + Math.random().toString(36).slice(2);
 const SOURCE_METRO = 'Miami, FL';
@@ -1191,12 +1192,13 @@ step++;
 while (QUESTIONS[step] && (answers[QUESTIONS[step].key] || ((QUESTIONS[step].key === 'email' || QUESTIONS[step].key === 'phone') && (leadEmail || leadPhone)) || (QUESTIONS[step].key === 'zip' && leadZip) || (QUESTIONS[step].key === 'name' && buyerFirstName))) step++;
 clearQuickReplies();
 const next = QUESTIONS[step];
-if (!next) { finishChat(); return; }
+if (!next) { confirmAndFinish(); return; }
 if (!next.options) {
 // Switch the keyboard (email, numbers, name) while we are still inside the buyer's tap.
 try { chatFoot.classList.remove('tap-only'); chatCard.classList.add('typed-step'); chatInput.blur(); setInputMode(next.key); chatInput.focus(); } catch (e) {}
 }
 queueLeadSave();
+if (q.key === 'email') { /* ZB-confirm */ saveQueue.then(function () { if (leadRecordId) return postVerify({ action: 'confirm', lead_id: leadRecordId }).then(function (r) { if (r && r.status === 'ok') emailConfirmed = true; }); }).catch(function () {}); }
 busy = true;
 const typingEl = addTyping();
 setTimeout(function () {
@@ -1204,6 +1206,46 @@ typingEl.remove();
 busy = false;
 askQuestion(next);
 }, 350);
+}
+
+// ---- Email check (ZeroBounce) the moment the email is typed ----
+let emailConfirmed = false;
+function postVerify(body) {
+return fetch(VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+}
+async function checkEmail(email) {
+try {
+const r = await Promise.race([postVerify({ action: 'check', email: email }), new Promise(function (res) { setTimeout(function () { res({ ok: true }); }, 9000); })]);
+return r && typeof r.ok === 'boolean' ? r : { ok: true };
+} catch (e) { return { ok: true }; }
+}
+function offerEmailFix(q, chk, typed) {
+if (chk.reason === 'typo' && chk.suggestion) {
+say('Did you mean ' + chk.suggestion + '?');
+clearQuickReplies();
+const w = document.createElement('div'); w.className = 'quick-replies'; w.style.gridTemplateColumns = '1fr';
+[['Yes, use ' + chk.suggestion, chk.suggestion], ['No, ' + typed + ' is right', typed]].forEach(function (pair) {
+const b = document.createElement('button'); b.type = 'button'; b.className = 'quick-reply'; b.textContent = pair[0];
+b.addEventListener('click', function () { if (busy) return; addBubble('user', pair[1]); messages.push({ role: 'user', content: pair[1] }); acceptAnswer(q, pair[1]); });
+w.appendChild(b);
+});
+chatBody.appendChild(w); quickWrap = w;
+keepInView();
+return;
+}
+say(chk.reason === 'disposable' ? "That looks like a temporary inbox. What's an email you check regularly?" : "I can't find that email address. Could you double-check it and send it again?");
+keepInView();
+}
+async function confirmAndFinish() {
+if (!leadEmail || emailConfirmed) { finishChat(); return; }
+clearQuickReplies();
+busy = true;
+const t = addTyping();
+await queueLeadSave();
+try { if (leadRecordId) { const r = await postVerify({ action: 'confirm', lead_id: leadRecordId }); if (r && r.status === 'ok') emailConfirmed = true; } } catch (e) {}
+t.remove();
+busy = false;
+finishChat();
 }
 
 function finishChat() {
@@ -1271,6 +1313,10 @@ if (!value && /\d/.test(text)) nudge = "I need a 5-digit zip code. Could you dou
 value = findFirstName(text);
 }
 
+if (value && q.key === 'email') {
+busy = true; const chkTyping = addTyping(); const chk = await checkEmail(value); chkTyping.remove(); busy = false;
+if (!chk.ok) { logStep(); offerEmailFix(q, chk, value); return; }
+}
 if (value) { logStep(); acceptAnswer(q, value); return; }
 if (nudge) { logStep(); say(nudge); keepInView(); return; }
 const answered = await talk(q);
