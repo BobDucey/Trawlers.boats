@@ -111,13 +111,10 @@ var MODE = 'download', GO_LABEL = 'Get My Report Now';
 (function () {
   var ask = document.getElementById('askStep'), frm = document.getElementById('reportForm');
   function showForm() { ask.hidden = true; frm.hidden = false; document.getElementById('go').textContent = GO_LABEL; document.getElementById('fname').focus(); }
-  document.getElementById('yesStart').addEventListener('click', function () { ev_('said_yes'); showForm(); });
-  document.getElementById('noStart').addEventListener('click', function () {
-    ev_('said_no'); MODE = 'email'; GO_LABEL = 'Email My Report';
-    document.getElementById('mailNote').hidden = false;
-    var n = document.querySelector('.note'); if (n) n.textContent = 'Free. It will be in your inbox in a minute.';
-    showForm();
-  });
+  // SPLIT: Yes/No go to the separate sign-up page, carrying the session and ad click id
+  function go2(m) { var q = '?s=' + encodeURIComponent(SESSION) + (m ? '&m=' + m : '') + (GCLID ? '&gclid=' + encodeURIComponent(GCLID) : ''); setTimeout(function () { location.href = '/miami-fl-signup' + q; }, 150); }
+  document.getElementById('yesStart').addEventListener('click', function () { ev_('said_yes'); go2(''); });
+  document.getElementById('noStart').addEventListener('click', function () { ev_('said_no'); go2('email'); });
 })();
 
 var form = document.getElementById('reportForm'), err = document.getElementById('err'), go = document.getElementById('go');
