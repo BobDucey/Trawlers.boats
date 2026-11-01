@@ -26,6 +26,12 @@ input:focus{border-color:var(--teal-bright)}
 button{width:100%;font-size:19px;font-weight:800;padding:16px;border:0;border-radius:14px;background:var(--teal);color:#06231d;cursor:pointer}
 button[disabled]{opacity:.6;cursor:wait}
 .note{margin:0;text-align:center;font-size:14px;color:var(--dim)}
+.confirm{background:var(--card2);border:1px solid var(--gold);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.confirm[hidden]{display:none}
+.confirm p{margin:0;font-size:16px;line-height:1.45;color:var(--text)}
+.cbtns{display:flex;gap:10px}
+.cbtns button{font-size:16px;padding:13px 8px}
+button.alt{background:transparent;color:var(--text);border:1px solid var(--line)}
 .err{margin:0;color:#FFB4A8;font-size:15px;line-height:1.4;min-height:0}
 .done{display:none;flex-direction:column;gap:14px;text-align:center}
 .done h2{margin:0;color:var(--gold);font-size:26px}
@@ -47,6 +53,7 @@ button[disabled]{opacity:.6;cursor:wait}
 <div><label for="fname">First name</label><input id="fname" name="fname" autocomplete="given-name" required maxlength="60"></div>
 <div><label for="email">Email <span class="es">· Correo electrónico</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
 <p class="err" id="err" role="alert"></p>
+<div class="confirm" id="confirmBox" hidden><p id="confirmText"></p><div class="cbtns"><button type="button" class="alt" id="fixBtn">Fix my email</button><button type="button" id="yesBtn">Yes, send it</button></div></div>
 <button type="submit" id="go">Get My Report Now</button>
 <p class="note">Free. We’ll also email you a copy.</p>
 </div>
@@ -80,16 +87,34 @@ err.textContent = '';
 if (!name) { fail('Please enter your first name.'); nameIn.focus(); return; }
 if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) { fail('Please enter a valid email address.'); emailIn.focus(); return; }
 go.disabled = true; go.textContent = 'Checking…';
-fetch(VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'form', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION }) })
-.then(function (r) { return r.json(); })
-.then(function (r) {
-if (!r || !r.ok) {
+post({ action: 'check', email: email }).then(function (c) {
+if (!c || !c.ok) return showProblem(c);
+if (c.verified) return submitForm(name, email);
+go.disabled = false; go.textContent = 'Get My Report Now';
+confirmText.textContent = "We couldn't confirm " + email + '. Is it right?';
+confirmBox.hidden = false; go.style.display = 'none';
+pending = { name: name, email: email };
+}).catch(function () { fail('Something went wrong. Please try again.'); });
+});
+
+var confirmBox = document.getElementById('confirmBox'), confirmText = document.getElementById('confirmText'), pending = null;
+function hideConfirm() { confirmBox.hidden = true; go.style.display = ''; }
+document.getElementById('fixBtn').addEventListener('click', function () { hideConfirm(); pending = null; emailIn.focus(); emailIn.select(); });
+document.getElementById('yesBtn').addEventListener('click', function () { if (!pending) return; var p = pending; pending = null; hideConfirm(); go.disabled = true; go.textContent = 'Sending…'; submitForm(p.name, p.email); });
+emailIn.addEventListener('input', function () { if (!confirmBox.hidden) { hideConfirm(); pending = null; } });
+
+function post(body) { return fetch(VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.json(); }); }
+function showProblem(r) {
 if (r && r.reason === 'typo' && r.suggestion) { emailIn.value = r.suggestion; return fail('Did you mean ' + r.suggestion + '? We fixed it — tap the button again.'); }
 if (r && r.reason === 'disposable') return fail('That looks like a temporary inbox. Please use an email you check.');
 if (r && r.reason === 'name') return fail('Please enter your first name.');
 if (r && (r.reason === 'invalid' || r.reason === 'domain' || r.reason === 'format')) return fail("We can't find that email address. Please double-check it.");
 return fail('Something went wrong. Please try again.');
 }
+function submitForm(name, email) {
+post({ action: 'form', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION })
+.then(function (r) {
+if (!r || !r.ok) return showProblem(r);
 try { if (window.gtag) window.gtag('event', 'conversion', { send_to: CONVERSION }); } catch (e) {}
 document.getElementById('formCard').style.display = 'none';
 var done = document.getElementById('doneCard'); done.style.display = 'flex';
@@ -105,7 +130,7 @@ document.getElementById('doneText').textContent = 'Thanks, ' + first + '! Your 2
 }
 })
 .catch(function () { fail('Something went wrong. Please try again.'); });
-});
+}
 })();
 </script>
 </body>
