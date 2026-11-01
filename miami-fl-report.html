@@ -38,6 +38,13 @@ button.alt{background:transparent;color:var(--text);border:1px solid var(--line)
 .done p{margin:0;font-size:17px;line-height:1.45;color:var(--text)}
 .dl{display:block;text-decoration:none;font-size:26px;font-weight:800;padding:22px 16px;border-radius:14px;background:var(--gold);color:#1a1405}
 .es{opacity:.8;font-style:italic}
+.ask{display:flex;flex-direction:column;gap:12px}
+.ask .q{margin:0;text-align:center;font-size:26px;font-weight:800;color:var(--gold)}
+.yn{display:flex;gap:12px}
+.yn button{font-size:22px;padding:18px 8px}
+button.yes{background:var(--gold);color:#1a1405}
+.mailnote{margin:0;text-align:center;font-size:20px;font-weight:700;color:var(--text)}
+#reportForm[hidden],.ask[hidden],.mailnote[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -47,8 +54,12 @@ button.alt{background:transparent;color:var(--text);border:1px solid var(--line)
 <img class="avatar" src="/capt-bob-avatar.png" alt="Capt. Bob">
 <h1>Free 2026 Miami Trawler Report</h1>
 <p class="sub">2026 prices, top brands, new vs. used and buying tips.</p>
-<p class="now">Download it now</p>
-<form id="reportForm" novalidate>
+<div class="ask" id="askStep">
+<p class="q">Download Now?</p>
+<div class="yn"><button type="button" class="yes" id="yesStart">Yes</button><button type="button" class="alt" id="noStart">No</button></div>
+</div>
+<p class="mailnote" id="mailNote" hidden>No problem. We’ll email it to you.</p>
+<form id="reportForm" novalidate hidden>
 <div style="display:flex;flex-direction:column;gap:14px">
 <div><label for="fname">First name</label><input id="fname" name="fname" autocomplete="given-name" required maxlength="60"></div>
 <div><label for="email">Email <span class="es">· Correo electrónico</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
@@ -95,9 +106,23 @@ function ev_(event, detail, once) {
   document.getElementById('dlLink').addEventListener('click', function () { ev_('download_click'); });
 })();
 
+// YESNO: ask "Download Now?" first. Yes = form + instant download; No = form + we email it.
+var MODE = 'download', GO_LABEL = 'Get My Report Now';
+(function () {
+  var ask = document.getElementById('askStep'), frm = document.getElementById('reportForm');
+  function showForm() { ask.hidden = true; frm.hidden = false; document.getElementById('go').textContent = GO_LABEL; document.getElementById('fname').focus(); }
+  document.getElementById('yesStart').addEventListener('click', function () { ev_('said_yes'); showForm(); });
+  document.getElementById('noStart').addEventListener('click', function () {
+    ev_('said_no'); MODE = 'email'; GO_LABEL = 'Email My Report';
+    document.getElementById('mailNote').hidden = false;
+    var n = document.querySelector('.note'); if (n) n.textContent = 'Free. It will be in your inbox in a minute.';
+    showForm();
+  });
+})();
+
 var form = document.getElementById('reportForm'), err = document.getElementById('err'), go = document.getElementById('go');
 var nameIn = document.getElementById('fname'), emailIn = document.getElementById('email');
-function fail(msg) { ev_('error', msg); err.textContent = msg; go.disabled = false; go.textContent = 'Get My Report Now'; }
+function fail(msg) { ev_('error', msg); err.textContent = msg; go.disabled = false; go.textContent = GO_LABEL; }
 
 form.addEventListener('submit', function (ev) {
 ev.preventDefault();
@@ -110,7 +135,7 @@ go.disabled = true; go.textContent = 'Checking…';
 post({ action: 'check', email: email }).then(function (c) {
 if (!c || !c.ok) return showProblem(c);
 if (c.verified) return submitForm(name, email);
-go.disabled = false; go.textContent = 'Get My Report Now';
+go.disabled = false; go.textContent = GO_LABEL;
 confirmText.textContent = "We couldn't confirm " + email + '. Is it right?';
 confirmBox.hidden = false; go.style.display = 'none'; ev_('confirm_shown', email);
 pending = { name: name, email: email };
@@ -135,13 +160,13 @@ function submitForm(name, email) {
 post({ action: 'form', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION })
 .then(function (r) {
 if (!r || !r.ok) return showProblem(r);
-ev_('success', r.token ? 'download' : 'email');
+ev_('success', MODE);
 try { if (window.gtag) window.gtag('event', 'conversion', { send_to: CONVERSION }); } catch (e) {}
 document.getElementById('formCard').style.display = 'none';
 var done = document.getElementById('doneCard'); done.style.display = 'flex';
 var first = name.split(' ')[0];
 var dl = document.getElementById('dlLink');
-if (r.token) {
+if (r.token && MODE !== 'email') {
 dl.href = 'https://www.aiboatleads.com/report.html?t=' + encodeURIComponent(r.token);
 document.getElementById('doneText').textContent = 'Thanks, ' + first + '! Your 2026 Miami ' + BOAT_ONE + ' Report is ready. We also emailed a copy to ' + email + '.';
 } else {
