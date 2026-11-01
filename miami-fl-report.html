@@ -76,12 +76,32 @@ var SESSION = 'F-' + ((window.crypto && crypto.randomUUID) ? crypto.randomUUID()
 var GCLID = (function () { var id = ''; try { var q = new URLSearchParams(location.search); id = q.get('gclid') || q.get('gbraid') || q.get('wbraid') || ''; } catch (e) {} try { if (id) sessionStorage.setItem('ad_click_id', id); else id = sessionStorage.getItem('ad_click_id') || ''; } catch (e) {} return id; })();
 try { fetch(BACKEND_URL + '/api/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ site: SITE, page: METRO, session_id: SESSION }) }).catch(function () {}); } catch (e) {}
 
+// FUNNEL: step-by-step form tracking (form_events table)
+var EV_URL = 'https://imgjgrpmjoqlghbkmesy.supabase.co/rest/v1/form_events', EV_KEY = 'sb_publishable_ZCASTnh-D_DuxnnY_eExMg_kv_ng6ER', T0 = Date.now(), evSeen = {};
+function ev_(event, detail, once) {
+  if (once) { if (evSeen[event]) return; evSeen[event] = 1; }
+  try { fetch(EV_URL, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json', apikey: EV_KEY, Authorization: 'Bearer ' + EV_KEY, Prefer: 'return=minimal' }, body: JSON.stringify({ session_id: SESSION, site: SITE, event: event, detail: detail == null ? null : String(detail).slice(0, 200) }) }).catch(function () {}); } catch (e) {}
+}
+(function () {
+  var ref = ''; try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) {}
+  ev_('view', [GCLID ? 'ad' : 'noclick', (window.innerWidth < 700 ? 'mobile' : 'desktop'), ref || 'noref'].join(' | '));
+  [5, 15, 30, 60, 120].forEach(function (sec) { setTimeout(function () { if (!document.hidden) ev_('on_page_' + sec + 's'); }, sec * 1000); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) ev_('left_page', Math.round((Date.now() - T0) / 1000) + 's'); });
+  var fn = document.getElementById('fname'), em = document.getElementById('email');
+  fn.addEventListener('focus', function () { ev_('tap_name', null, 1); });
+  em.addEventListener('focus', function () { ev_('tap_email', null, 1); });
+  fn.addEventListener('input', function () { ev_('typing_name', null, 1); });
+  em.addEventListener('input', function () { ev_('typing_email', null, 1); });
+  document.getElementById('dlLink').addEventListener('click', function () { ev_('download_click'); });
+})();
+
 var form = document.getElementById('reportForm'), err = document.getElementById('err'), go = document.getElementById('go');
 var nameIn = document.getElementById('fname'), emailIn = document.getElementById('email');
-function fail(msg) { err.textContent = msg; go.disabled = false; go.textContent = 'Get My Report Now'; }
+function fail(msg) { ev_('error', msg); err.textContent = msg; go.disabled = false; go.textContent = 'Get My Report Now'; }
 
 form.addEventListener('submit', function (ev) {
 ev.preventDefault();
+ev_('submit');
 var name = nameIn.value.trim(), email = emailIn.value.trim().toLowerCase();
 err.textContent = '';
 if (!name) { fail('Please enter your first name.'); nameIn.focus(); return; }
@@ -92,15 +112,15 @@ if (!c || !c.ok) return showProblem(c);
 if (c.verified) return submitForm(name, email);
 go.disabled = false; go.textContent = 'Get My Report Now';
 confirmText.textContent = "We couldn't confirm " + email + '. Is it right?';
-confirmBox.hidden = false; go.style.display = 'none';
+confirmBox.hidden = false; go.style.display = 'none'; ev_('confirm_shown', email);
 pending = { name: name, email: email };
 }).catch(function () { fail('Something went wrong. Please try again.'); });
 });
 
 var confirmBox = document.getElementById('confirmBox'), confirmText = document.getElementById('confirmText'), pending = null;
 function hideConfirm() { confirmBox.hidden = true; go.style.display = ''; }
-document.getElementById('fixBtn').addEventListener('click', function () { hideConfirm(); pending = null; emailIn.focus(); emailIn.select(); });
-document.getElementById('yesBtn').addEventListener('click', function () { if (!pending) return; var p = pending; pending = null; hideConfirm(); go.disabled = true; go.textContent = 'Sending…'; submitForm(p.name, p.email); });
+document.getElementById('fixBtn').addEventListener('click', function () { ev_('confirm_fix'); hideConfirm(); pending = null; emailIn.focus(); emailIn.select(); });
+document.getElementById('yesBtn').addEventListener('click', function () { ev_('confirm_yes'); if (!pending) return; var p = pending; pending = null; hideConfirm(); go.disabled = true; go.textContent = 'Sending…'; submitForm(p.name, p.email); });
 emailIn.addEventListener('input', function () { if (!confirmBox.hidden) { hideConfirm(); pending = null; } });
 
 function post(body) { return fetch(VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.json(); }); }
@@ -115,6 +135,7 @@ function submitForm(name, email) {
 post({ action: 'form', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION })
 .then(function (r) {
 if (!r || !r.ok) return showProblem(r);
+ev_('success', r.token ? 'download' : 'email');
 try { if (window.gtag) window.gtag('event', 'conversion', { send_to: CONVERSION }); } catch (e) {}
 document.getElementById('formCard').style.display = 'none';
 var done = document.getElementById('doneCard'); done.style.display = 'flex';
