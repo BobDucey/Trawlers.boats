@@ -25,7 +25,7 @@ input{width:100%;font-size:18px;padding:14px 14px;border-radius:12px;border:1px 
 input:focus{border-color:var(--teal-bright)}
 button{width:100%;font-size:19px;font-weight:800;padding:16px;border:0;border-radius:14px;background:var(--teal);color:#06231d;cursor:pointer}
 button[disabled]{opacity:.6;cursor:wait}
-.note{margin:0;text-align:center;font-size:14px;color:var(--dim)}
+.note{margin:-6px 0 0;text-align:center;font-size:18px;font-weight:600;color:#9fe8d8}
 .confirm{background:var(--card2);border:1px solid var(--gold);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
 .confirm[hidden]{display:none}
 .confirm p{margin:0;font-size:16px;line-height:1.45;color:var(--text)}
@@ -53,20 +53,19 @@ button.yes{background:var(--gold);color:#1a1405}
 <div class="card" id="formCard">
 <img class="avatar" src="/capt-bob-avatar.png" alt="Capt. Bob">
 <h1>Free 2026 Miami Trawler Buyer’s Guide</h1>
-<p class="sub">2026 prices, top brands, new vs. used and buying tips.</p>
 <div class="ask" id="askStep" hidden>
 <p class="q">Download Now?</p>
 <div class="yn"><button type="button" class="yes" id="yesStart">Yes</button><button type="button" class="alt" id="noStart">No</button></div>
 </div>
 <p class="mailnote" id="mailNote" hidden>No problem. We’ll email it to you.</p>
+<p class="note">We’ll also email you a copy.</p>
 <form id="reportForm" novalidate hidden>
 <div style="display:flex;flex-direction:column;gap:14px">
 <div><label for="fname">First name</label><input id="fname" name="fname" autocomplete="given-name" required maxlength="60"></div>
-<div><label for="email">Email <span class="es">· Correo electrónico</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
+<div><label for="email">Email</label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
 <p class="err" id="err" role="alert"></p>
 <div class="confirm" id="confirmBox" hidden><p id="confirmText"></p><div class="cbtns"><button type="button" class="alt" id="fixBtn">Fix my email</button><button type="button" id="yesBtn">Yes, send it</button></div></div>
 <button type="submit" id="go">Get My Buyer’s Guide Now</button>
-<p class="note">Free. We’ll also email you a copy.</p>
 </div>
 </form>
 </div>
@@ -113,8 +112,8 @@ var MODE = 'download', GO_LABEL = 'Get My Buyer’s Guide Now';
   // SPLIT: sign-up page. ?m=email = we email it; otherwise instant download
   var m = ''; try { m = new URLSearchParams(location.search).get('m') || ''; } catch (e) {}
   var note = document.getElementById('mailNote');
-  if (m === 'email') { MODE = 'email'; GO_LABEL = 'Email My Buyer’s Guide'; var n = document.querySelector('.note'); if (n) n.textContent = 'Free. It will be in your inbox in a minute.'; }
-  else { note.textContent = 'Enter your name and email to download it now.'; }
+  if (m === 'email') { MODE = 'email'; GO_LABEL = 'Email My Buyer’s Guide'; var n = document.querySelector('.note'); if (n) n.textContent = 'It will be in your inbox in a minute.'; note.innerHTML = 'No problem. We’ll email it to you.<br>Please enter your first name and email.'; }
+  else { note.textContent = 'Please enter your first name and email.'; }
   note.hidden = false;
   showForm();
 })();
