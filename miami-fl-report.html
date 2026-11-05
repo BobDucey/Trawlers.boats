@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Free 2026 Miami Trawler Report | trawlers.boats</title>
-<meta name="description" content="Get Capt. Bob's free 2026 Miami Trawler Report now: prices, top brands, new vs. used and buying tips.">
+<title>Free 2026 Miami Trawler Buyer’s Guide | trawlers.boats</title>
+<meta name="description" content="Get Capt. Bob's free 2026 Miami Trawler Buyer’s Guide now: prices, top brands, new vs. used and buying tips.">
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://trawlers.boats/miami-fl-report">
 <script src="https://aiboatleads.com/captbob-track.js" defer></script>
@@ -52,7 +52,7 @@ button.yes{background:var(--gold);color:#1a1405}
 <div class="brand"><span class="dot"></span>Trawlers.boats · Powered by AI Boat Leads</div>
 <div class="card" id="formCard">
 <img class="avatar" src="/capt-bob-avatar.png" alt="Capt. Bob">
-<h1>Free 2026 Miami Trawler Report</h1>
+<h1>Free 2026 Miami Trawler Buyer’s Guide</h1>
 <p class="sub">2026 prices, top brands, new vs. used and buying tips.</p>
 <div class="ask" id="askStep">
 <p class="q">Download Now?</p>
@@ -65,16 +65,16 @@ button.yes{background:var(--gold);color:#1a1405}
 <div><label for="email">Email <span class="es">· Correo electrónico</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
 <p class="err" id="err" role="alert"></p>
 <div class="confirm" id="confirmBox" hidden><p id="confirmText"></p><div class="cbtns"><button type="button" class="alt" id="fixBtn">Fix my email</button><button type="button" id="yesBtn">Yes, send it</button></div></div>
-<button type="submit" id="go">Get My Report Now</button>
+<button type="submit" id="go">Get My Buyer’s Guide Now</button>
 <p class="note">Free. We’ll also email you a copy.</p>
 </div>
 </form>
 </div>
 <div class="card done" id="doneCard">
 <img class="avatar" src="/capt-bob-avatar.png" alt="Capt. Bob">
-<h2 id="doneTitle">Your report is ready</h2>
+<h2 id="doneTitle">Your buyer’s guide is ready</h2>
 <p id="doneText"></p>
-<a class="dl" id="dlLink" href="#" target="_blank" rel="noopener">Download Your Report Now</a>
+<a class="dl" id="dlLink" href="#" target="_blank" rel="noopener">Download Your Buyer’s Guide Now</a>
 </div>
 </div>
 <script>
@@ -107,7 +107,7 @@ function ev_(event, detail, once) {
 })();
 
 // YESNO: ask "Download Now?" first. Yes = form + instant download; No = form + we email it.
-var MODE = 'download', GO_LABEL = 'Get My Report Now';
+var MODE = 'download', GO_LABEL = 'Get My Buyer’s Guide Now';
 (function () {
   var ask = document.getElementById('askStep'), frm = document.getElementById('reportForm');
   function showForm() { ask.hidden = true; frm.hidden = false; document.getElementById('go').textContent = GO_LABEL; document.getElementById('fname').focus(); }
@@ -165,11 +165,11 @@ var first = name.split(' ')[0];
 var dl = document.getElementById('dlLink');
 if (r.token && MODE !== 'email') {
 dl.href = 'https://www.aiboatleads.com/report.html?t=' + encodeURIComponent(r.token);
-document.getElementById('doneText').textContent = 'Thanks, ' + first + '! Your 2026 Miami ' + BOAT_ONE + ' Report is ready. We also emailed a copy to ' + email + '.';
+document.getElementById('doneText').textContent = 'Thanks, ' + first + '! Your 2026 Miami ' + BOAT_ONE + ' Buyer’s Guide is ready. We also emailed a copy to ' + email + '.';
 } else {
 dl.style.display = 'none';
 document.getElementById('doneTitle').textContent = 'Check your email';
-document.getElementById('doneText').textContent = 'Thanks, ' + first + '! Your 2026 Miami ' + BOAT_ONE + ' Report is on its way to ' + email + '. Open the email from Capt. Bob to read it.';
+document.getElementById('doneText').textContent = 'Thanks, ' + first + '! Your 2026 Miami ' + BOAT_ONE + ' Buyer’s Guide is on its way to ' + email + '. Open the email from Capt. Bob to read it.';
 }
 })
 .catch(function () { fail('Something went wrong. Please try again.'); });
