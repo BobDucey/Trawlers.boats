@@ -1,1 +1,11 @@
-{"cleanUrls": true, "trailingSlash": false}
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/miami-fl",
+      "destination": "/miami-fl-report",
+      "permanent": true
+    }
+  ]
+}
