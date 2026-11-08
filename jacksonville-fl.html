@@ -45,18 +45,28 @@ button.alt{background:transparent;color:var(--text);border:1px solid var(--line)
 button.yes{background:var(--gold);color:#1a1405}
 .mailnote{margin:0;text-align:center;font-size:20px;font-weight:700;color:var(--text)}
 #reportForm[hidden],.ask[hidden],.mailnote[hidden]{display:none}
+.capt{display:flex;align-items:center;justify-content:center;gap:12px}
+.capt img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(41,214,182,.7)}
+.capt .who{display:flex;flex-direction:column;line-height:1.25;text-align:left}
+.capt .who b{font-size:18px;color:var(--text)}
+.capt .who span{font-size:14px;color:var(--dim)}
+.bonus{display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed var(--gold);border-radius:12px;padding:12px 14px;background:rgba(242,193,78,.06)}
+.bonus .tag{flex:none;background:var(--gold);color:#1a1405;font-weight:800;font-size:13px;letter-spacing:.06em;padding:5px 8px;border-radius:6px}
+.bonus b{color:var(--gold);font-size:19px}
+.calc{display:block;text-decoration:none;font-size:20px;font-weight:800;padding:18px 16px;border-radius:14px;background:var(--teal);color:#06231d}
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="brand"><span class="dot"></span>Trawlers.boats · Powered by AI Boat Leads</div>
 <div class="card" id="formCard">
-<img class="avatar" src="/capt-bob-avatar.png" alt="Capt. Bob">
+<div class="capt"><img src="/capt-bob-avatar.png" alt="Capt. Bob"><div class="who"><b>Capt. Bob</b><span>Your Free Boat Advisor</span></div></div>
 <h1>Free 2026 Jacksonville Trawler Buyer’s Guide</h1>
 <div class="ask" id="askStep" hidden>
 <p class="q">Download Now?</p>
 <div class="yn"><button type="button" class="yes" id="yesStart">Yes</button><button type="button" class="alt" id="noStart">No</button></div>
 </div>
+<div class="bonus"><span class="tag">BONUS</span><b>Free Boat Cost Calculator</b></div>
 <p class="mailnote" id="mailNote">Please enter your first name and email.</p>
 <form id="reportForm" novalidate>
 <div style="display:flex;flex-direction:column;gap:14px">
@@ -64,8 +74,8 @@ button.yes{background:var(--gold);color:#1a1405}
 <div><label for="email">Email <span class="es">· Correo electrónico</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
 <p class="err" id="err" role="alert"></p>
 <div class="confirm" id="confirmBox" hidden><p id="confirmText"></p><div class="cbtns"><button type="button" class="alt" id="fixBtn">Fix my email</button><button type="button" id="yesBtn">Yes, send it</button></div></div>
-<button type="submit" id="go">Get My Buyer’s Guide Now</button>
-<p class="note">Free. We’ll also email you a copy.</p>
+<button type="submit" id="go">Get My Guide + Bonus Tool</button>
+<p class="note">Free. We’ll also email you a copy and your calculator link.</p>
 </div>
 </form>
 </div>
@@ -74,6 +84,7 @@ button.yes{background:var(--gold);color:#1a1405}
 <h2 id="doneTitle">Your buyer’s guide is ready</h2>
 <p id="doneText"></p>
 <a class="dl" id="dlLink" href="#" target="_blank" rel="noopener">Download Your Buyer’s Guide Now</a>
+<a class="calc" id="calcLink" href="https://www.aiboatleads.com/boat-cost-calculator.html?site=trawlers.boats&amp;metro=Jacksonville%2C%20FL&amp;src=thanks" target="_blank" rel="noopener">Open My Bonus Cost Calculator</a>
 </div>
 </div>
 <script>
@@ -103,10 +114,11 @@ function ev_(event, detail, once) {
   fn.addEventListener('input', function () { ev_('typing_name', null, 1); });
   em.addEventListener('input', function () { ev_('typing_email', null, 1); });
   document.getElementById('dlLink').addEventListener('click', function () { ev_('download_click'); });
+  document.getElementById('calcLink').addEventListener('click', function () { ev_('calc_click'); });
 })();
 
 // YESNO: ask "Download Now?" first. Yes = form + instant download; No = form + we email it.
-var MODE = 'download', GO_LABEL = 'Get My Buyer’s Guide Now';
+var MODE = 'download', GO_LABEL = 'Get My Guide + Bonus Tool';
 (function () {
   var ask = document.getElementById('askStep'), frm = document.getElementById('reportForm');
   function showForm() { ask.hidden = true; frm.hidden = false; document.getElementById('go').textContent = GO_LABEL; document.getElementById('fname').focus(); }
