@@ -54,6 +54,7 @@ button.yes{background:var(--gold);color:#1a1405}
 .bonus .tag{flex:none;background:var(--gold);color:#1a1405;font-weight:800;font-size:13px;letter-spacing:.06em;padding:5px 8px;border-radius:6px}
 .bonus b{color:var(--gold);font-size:19px}
 .calc{display:block;text-decoration:none;font-size:20px;font-weight:800;padding:18px 16px;border-radius:14px;background:var(--teal);color:#06231d}
+.hpf{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 </style>
 </head>
 <body>
@@ -72,6 +73,7 @@ button.yes{background:var(--gold);color:#1a1405}
 <div style="display:flex;flex-direction:column;gap:14px">
 <div><label for="fname">First name</label><input id="fname" name="fname" autocomplete="given-name" required maxlength="60"></div>
 <div><label for="email">Email <span class="es">· Correo electrónico</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
+<div class="hpf" aria-hidden="true"><label for="hp_field">Leave this empty</label><input id="hp_field" name="hp_field" tabindex="-1" autocomplete="off"></div>
 <p class="err" id="err" role="alert"></p>
 <div class="confirm" id="confirmBox" hidden><p id="confirmText"></p><div class="cbtns"><button type="button" class="alt" id="fixBtn">Fix my email</button><button type="button" id="yesBtn">Yes, send it</button></div></div>
 <button type="submit" id="go">Get My Guide + Bonus Tool</button>
@@ -165,7 +167,7 @@ if (r && (r.reason === 'invalid' || r.reason === 'domain' || r.reason === 'forma
 return fail('Something went wrong. Please try again.');
 }
 function submitForm(name, email) {
-post({ action: 'form', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION })
+post({ action: 'form', hp: (document.getElementById('hp_field') || {}).value || '', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION })
 .then(function (r) {
 if (!r || !r.ok) return showProblem(r);
 ev_('success', MODE);
