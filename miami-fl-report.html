@@ -108,7 +108,7 @@ function ev_(event, detail, once) {
 }
 (function () {
   var ref = ''; try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) {}
-  ev_('view', [GCLID ? 'ad' : 'noclick', (window.innerWidth < 700 ? 'mobile' : 'desktop'), ref || 'noref'].join(' | '));
+  ev_('view', [GCLID ? 'ad' : 'noclick', (window.innerWidth < 700 ? 'mobile' : 'desktop'), ref || 'noref', 'offer=' + (window.OFFER || 'guide')].join(' | '));
   [5, 15, 30, 60, 120].forEach(function (sec) { setTimeout(function () { if (!document.hidden) ev_('on_page_' + sec + 's'); }, sec * 1000); });
   document.addEventListener('visibilitychange', function () { if (document.hidden) ev_('left_page', Math.round((Date.now() - T0) / 1000) + 's'); });
   var fn = document.getElementById('fname'), em = document.getElementById('email');
