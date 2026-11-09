@@ -63,6 +63,7 @@ button.yes{background:var(--gold);color:#1a1405}
 <div class="card" id="formCard">
 <div class="capt"><img src="/capt-bob-avatar.png" alt="Capt. Bob"><div class="who"><b>Capt. Bob</b><span>Your Free Boat Advisor</span></div></div>
 <h1>Free 2026 Miami Trawler Buyer’s Guide</h1>
+<script>(function(){try{var o=new URLSearchParams(location.search).get('offer');if(o)sessionStorage.setItem('offer',o);else o=sessionStorage.getItem('offer');if(o==='brands'){window.OFFER='brands';var h=document.querySelector('h1');h.textContent='Compare 2026 Miami Trawler Brands';document.title='Compare 2026 Miami Trawler Brands | '+location.hostname;}}catch(e){}})();</script>
 <div class="ask" id="askStep" hidden>
 <p class="q">Download Now?</p>
 <div class="yn"><button type="button" class="yes" id="yesStart">Yes</button><button type="button" class="alt" id="noStart">No</button></div>
@@ -167,10 +168,10 @@ if (r && (r.reason === 'invalid' || r.reason === 'domain' || r.reason === 'forma
 return fail('Something went wrong. Please try again.');
 }
 function submitForm(name, email) {
-post({ action: 'form', hp: (document.getElementById('hp_field') || {}).value || '', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION })
+post({ action: 'form', hp: (document.getElementById('hp_field') || {}).value || '', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION, offer: window.OFFER || '' })
 .then(function (r) {
 if (!r || !r.ok) return showProblem(r);
-ev_('success', MODE);
+ev_('success', MODE + (window.OFFER ? '|offer=' + window.OFFER : ''));
 try { if (window.gtag) window.gtag('event', 'conversion', { send_to: CONVERSION }); } catch (e) {}
 document.getElementById('formCard').style.display = 'none';
 var done = document.getElementById('doneCard'); done.style.display = 'flex';
