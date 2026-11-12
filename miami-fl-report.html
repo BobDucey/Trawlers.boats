@@ -45,6 +45,8 @@ button.alt{background:transparent;color:var(--text);border:1px solid var(--line)
 button.yes{background:var(--gold);color:#1a1405}
 .mailnote{margin:0;text-align:center;font-size:20px;font-weight:700;color:var(--text)}
 #reportForm[hidden],.ask[hidden],.mailnote[hidden]{display:none}
+.says{position:relative;margin:2px 0 0;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px 16px;font-size:17px;line-height:1.4;color:var(--text);font-style:italic;text-align:center}
+.says:before{content:"";position:absolute;top:-9px;left:50%;margin-left:-9px;border:9px solid transparent;border-top:0;border-bottom-color:var(--line)}
 .capt{display:flex;align-items:center;justify-content:center;gap:12px}
 .capt img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(41,214,182,.7)}
 .capt .who{display:flex;flex-direction:column;line-height:1.25;text-align:left}
@@ -62,8 +64,9 @@ button.yes{background:var(--gold);color:#1a1405}
 <div class="brand"><span class="dot"></span>Trawlers.boats · Powered by AI Boat Leads</div>
 <div class="card" id="formCard">
 <div class="capt"><img src="/capt-bob-avatar.png" alt="Capt. Bob"><div class="who"><b>Capt. Bob</b><span>Your Free Boat Advisor</span></div></div>
+<p class="says" id="captSays">“I wrote this guide so you know the prices, brands, and what to look for before you buy.”</p>
 <h1>Free 2026 Miami Trawler Buyer’s Guide</h1>
-<script>(function(){try{var o=new URLSearchParams(location.search).get('offer');if(o)sessionStorage.setItem('offer',o);else o=sessionStorage.getItem('offer');if(o==='brands'){window.OFFER='brands';var h=document.querySelector('h1');h.textContent='Compare 2026 Miami Trawler Brands';document.title='Compare 2026 Miami Trawler Brands | '+location.hostname;}}catch(e){}})();</script>
+<script>(function(){try{var o=new URLSearchParams(location.search).get('offer');if(o)sessionStorage.setItem('offer',o);else o=sessionStorage.getItem('offer');if(o==='brands'){window.OFFER='brands';var h=document.querySelector('h1');h.textContent='Compare 2026 Miami Trawler Brands';var q=document.getElementById('captSays');if(q)q.textContent='“I compared the top trawler brands side by side so you don’t have to.”';document.title='Compare 2026 Miami Trawler Brands | '+location.hostname;}}catch(e){}})();</script>
 <div class="ask" id="askStep" hidden>
 <p class="q">Download Now?</p>
 <div class="yn"><button type="button" class="yes" id="yesStart">Yes</button><button type="button" class="alt" id="noStart">No</button></div>
