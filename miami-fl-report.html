@@ -80,7 +80,7 @@ button.yes{background:var(--gold);color:#1a1405}
 <div class="hpf" aria-hidden="true"><label for="hp_field">Leave this empty</label><input id="hp_field" name="hp_field" tabindex="-1" autocomplete="off"></div>
 <p class="err" id="err" role="alert"></p>
 <div class="confirm" id="confirmBox" hidden><p id="confirmText"></p><div class="cbtns"><button type="button" class="alt" id="fixBtn">Fix my email</button><button type="button" id="yesBtn">Yes, send it</button></div></div>
-<button type="submit" id="go">Get My Guide + Bonus Tool</button>
+<button type="submit" id="go">Get My Guide Now + Bonus Tool</button>
 <p class="note">Free. We’ll also email you a copy and your calculator link.</p>
 </div>
 </form>
@@ -124,7 +124,7 @@ function ev_(event, detail, once) {
 })();
 
 // YESNO: ask "Download Now?" first. Yes = form + instant download; No = form + we email it.
-var MODE = 'download', GO_LABEL = 'Get My Guide + Bonus Tool';
+var MODE = 'download', GO_LABEL = 'Get My Guide Now + Bonus Tool';
 (function () {
   var ask = document.getElementById('askStep'), frm = document.getElementById('reportForm');
   function showForm() { ask.hidden = true; frm.hidden = false; document.getElementById('go').textContent = GO_LABEL; document.getElementById('fname').focus(); }
