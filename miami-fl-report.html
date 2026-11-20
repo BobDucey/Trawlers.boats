@@ -95,16 +95,24 @@ button{padding:14px;font-size:18px}
 <div class="yn"><button type="button" class="yes" id="yesStart">Yes</button><button type="button" class="alt" id="noStart">No</button></div>
 </div>
 <div class="offer"><div class="cover" aria-hidden="true"><div class="k">CAPT. BOB’S</div><div class="y">2026</div><div class="t">Trawler Buyer’s Guide</div><div class="m">Miami Edition</div><img src="/capt-bob-avatar.png" alt=""></div><div class="bonus"><span class="tag">BONUS</span><b>Free Boat Loan &amp; Cost Calculator</b></div></div>
-<p class="mailnote" id="mailNote">Please enter your first name and email.</p>
+<p class="mailnote" id="mailNote">Please enter your email.</p>
 <form id="reportForm" novalidate>
 <div style="display:flex;flex-direction:column;gap:14px">
-<div><label for="fname">First name</label><input id="fname" name="fname" autocomplete="given-name" required maxlength="60"></div>
 <div><label for="email">Email <span class="es">· Correo electrónico</span></label><input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="200"></div>
 <div class="hpf" aria-hidden="true"><label for="hp_field">Leave this empty</label><input id="hp_field" name="hp_field" tabindex="-1" autocomplete="off"></div>
 <p class="err" id="err" role="alert"></p>
 <div class="confirm" id="confirmBox" hidden><p id="confirmText"></p><div class="cbtns"><button type="button" class="alt" id="fixBtn">Fix my email</button><button type="button" id="yesBtn">Yes, send it</button></div></div>
 <button type="submit" id="go">Get My Guide Now + Bonus Tool</button>
 <p class="note">Free. We’ll also email you a copy and your calculator link.</p>
+</div>
+</form>
+<form id="nameForm" novalidate hidden>
+<div style="display:flex;flex-direction:column;gap:14px">
+<p class="mailnote" style="margin:0">Personalize your guide: what&rsquo;s your first name?</p>
+<div><label for="fname">First name</label><input id="fname" name="fname" autocomplete="given-name" maxlength="60"></div>
+<p class="err" id="err2" role="alert"></p>
+<button type="submit" id="go2">Personalize My Guide</button>
+<button type="button" id="skipName" style="background:none;border:0;box-shadow:none;color:#9fb3ba;text-decoration:underline;font-size:15px;padding:4px;cursor:pointer;width:auto;align-self:center">Skip, just give me the guide</button>
 </div>
 </form>
 </div>
@@ -166,7 +174,6 @@ ev.preventDefault();
 ev_('submit');
 var name = nameIn.value.trim(), email = emailIn.value.trim().toLowerCase();
 err.textContent = '';
-if (!name) { fail('Please enter your first name.'); nameIn.focus(); return; }
 if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) { fail('Please enter a valid email address.'); emailIn.focus(); return; }
 go.disabled = true; go.textContent = 'Checking…';
 post({ action: 'check', email: email }).then(function (c) {
@@ -193,24 +200,47 @@ if (r && r.reason === 'name') return fail('Please enter your first name.');
 if (r && (r.reason === 'invalid' || r.reason === 'domain' || r.reason === 'format')) return fail("We can't find that email address. Please double-check it.");
 return fail('Something went wrong. Please try again.');
 }
-function submitForm(name, email) {
-post({ action: 'form', hp: (document.getElementById('hp_field') || {}).value || '', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION, offer: window.OFFER || '' })
-.then(function (r) {
-if (!r || !r.ok) return showProblem(r);
-ev_('success', MODE + (window.OFFER ? '|offer=' + window.OFFER : ''));
-try { if (window.gtag) window.gtag('event', 'conversion', { send_to: CONVERSION }); } catch (e) {}
+
+var leadId = null;
+function askName(r, email) {
+leadId = r.lead_id || null;
+form.hidden = true; document.getElementById('mailNote').hidden = true;
+var nf = document.getElementById('nameForm'); nf.hidden = false; nameIn.focus();
+ev_('name_step');
+function finish(name) {
+ev_(name ? 'name_given' : 'name_skipped');
+if (leadId) post({ action: 'name', lead_id: leadId, session_id: SESSION, name: name }).catch(function () {});
+showDone(r, name, email);
+}
+nf.addEventListener('submit', function (e) {
+e.preventDefault();
+var n = nameIn.value.trim().replace(/\s+/g, ' ');
+if (!n) { document.getElementById('err2').textContent = 'Please enter your first name, or tap Skip.'; nameIn.focus(); return; }
+document.getElementById('go2').disabled = true; finish(n);
+});
+document.getElementById('skipName').addEventListener('click', function () { finish(''); });
+}
+function showDone(r, name, email) {
 document.getElementById('formCard').style.display = 'none';
 var done = document.getElementById('doneCard'); done.style.display = 'flex';
 var first = name.split(' ')[0];
 var dl = document.getElementById('dlLink');
 if (r.token && MODE !== 'email') {
 dl.href = 'https://www.aiboatleads.com/report.html?t=' + encodeURIComponent(r.token);
-document.getElementById('doneText').textContent = 'Thanks, ' + first + '! Your 2026 Miami ' + BOAT_ONE + ' Buyer’s Guide is ready. We also emailed a copy to ' + email + '.';
+document.getElementById('doneText').textContent = (first ? 'Thanks, ' + first + '! ' : 'Thanks! ') + 'Your 2026 Miami ' + BOAT_ONE + ' Buyer’s Guide is ready. We also emailed a copy to ' + email + '.';
 } else {
 dl.style.display = 'none';
 document.getElementById('doneTitle').textContent = 'Check your email';
-document.getElementById('doneText').textContent = 'Thanks, ' + first + '! Your 2026 Miami ' + BOAT_ONE + ' Buyer’s Guide is on its way to ' + email + '. Open the email from Capt. Bob to read it.';
+document.getElementById('doneText').textContent = (first ? 'Thanks, ' + first + '! ' : 'Thanks! ') + 'Your 2026 Miami ' + BOAT_ONE + ' Buyer’s Guide is on its way to ' + email + '. Open the email from Capt. Bob to read it.';
 }
+}
+function submitForm(name, email) {
+post({ action: 'form', name_later: true, hp: (document.getElementById('hp_field') || {}).value || '', name: name, email: email, site: SITE, metro: METRO, boat_type: BOAT, gclid: GCLID, session_id: SESSION, offer: window.OFFER || '' })
+.then(function (r) {
+if (!r || !r.ok) return showProblem(r);
+ev_('success', MODE + (window.OFFER ? '|offer=' + window.OFFER : ''));
+try { if (window.gtag) window.gtag('event', 'conversion', { send_to: CONVERSION }); } catch (e) {}
+askName(r, email);
 })
 .catch(function () { fail('Something went wrong. Please try again.'); });
 }
