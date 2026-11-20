@@ -212,6 +212,7 @@ nf.addEventListener('submit', function (e) {
 e.preventDefault();
 var n = nameIn.value.trim().replace(/\s+/g, ' ');
 if (!n) { document.getElementById('err2').textContent = 'Please enter your first name, or tap Skip.'; nameIn.focus(); return; }
+if (/@|\d/.test(n)) { document.getElementById('err2').textContent = 'Please enter your first name (not your email).'; nameIn.focus(); nameIn.select(); return; }
 document.getElementById('go2').disabled = true; finish(n);
 });
 document.getElementById('skipName').addEventListener('click', function () { finish(''); });
